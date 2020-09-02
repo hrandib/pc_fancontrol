@@ -1,14 +1,19 @@
 import qbs
 
 Project {
+    references: [
+        "src/src.qbs",
+        "test/test.qbs"
+    ]
 
 CppApplication { name: "fancontrol"
 
-    cpp.optimization: "fast"
+    Depends { name: "src" }
+
+    consoleApplication: true
+    cpp.optimization: undefined
     cpp.debugInformation: false
-    cpp.includePaths: [
-        "src"
-    ]
+
     cpp.cFlags: [
         "-std=c17"
     ]
@@ -16,18 +21,28 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-Wall", "-Wextra"
+        "-O3", "-Wall", "-Wextra"
     ]
 
-    Group { name: "source"
+    Group { name: "main"
         prefix: "src/"
         files: [
-            "hwmon.cpp",
-            "hwmon.h",
-            "main.cpp",
+            "main.cpp"
+        ]
+    }
+
+    Group { name: "resource"
+        files: [
+            "config/fancontrol.yaml"
         ]
     }
 
 } //CppApplication
 
+CppApplication { name: "tests"
+    type: base.concat("autotest")
+}
+
+
+AutotestRunner { }
 } //Project

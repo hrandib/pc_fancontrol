@@ -19,9 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "hwmon.h"
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
-hwmon::hwmon()
-{
+#include <string_view>
 
-}
+constexpr std::string_view HWMON_ROOT = "/sys/class/hwmon";
+
+
+#endif // CONSTANTS_H

@@ -19,14 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef HWMON_H
-#define HWMON_H
+#include "hwmon/sensor_impl.h"
 
-
-class hwmon
+SensorImpl::SensorImpl(const fs::path& path) : SysfsReaderImpl{path}
 {
-public:
-    hwmon();
-};
+    concatWithFilePath(PATH_SUFFIX);
+}
 
-#endif // HWMON_H
+bool SensorImpl::open()
+{
+    return SysfsReaderImpl::open();
+}
+
+int32_t SensorImpl::get()
+{
+    return readNumber()/1000;
+}
