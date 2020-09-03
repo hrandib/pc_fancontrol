@@ -28,9 +28,11 @@
 struct Pwm
 {
     using ptr = std::unique_ptr<Pwm>;
+    using string = std::string;
 
     virtual bool open() = 0;
-    virtual bool set(uint_fast8_t val) = 0;
+    virtual bool set(uint_fast8_t val, const string& sourceName) = 0;
+    virtual void reset() = 0;
     virtual ~Pwm();
 };
 

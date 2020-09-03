@@ -40,6 +40,7 @@ CppApplication { name: "fancontrol"
 } //CppApplication
 
 CppApplication { name: "tests"
+    condition: false
     type: base.concat("autotest")
 }
 

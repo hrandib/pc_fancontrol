@@ -33,6 +33,7 @@ public:
 
     bool open() override;
     string read() override;
+    explicit operator bool() override;
 };
 
 #endif // SYSFSREADERIMPL_H

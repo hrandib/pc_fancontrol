@@ -13,16 +13,18 @@
 #include "sysfs/writer_impl.h"
 #include "sysfs/reader_impl.h"
 #include "hwmon/sensor_impl.h"
+#include "hwmon/hwmon.h"
 
 
 using namespace std;
 using ms = chrono::milliseconds;
 
 int main(int /* argc */, const char** /* argv[] */) {
-    Sensor::ptr sensor = make_sensor<SensorImpl>("/sys/class/hwmon/hwmon2/temp1");
+    Hwmon hwmon{"it8665"};
+    Sensor::ptr sensor = hwmon.getSensor("temp1");
     if (sensor->open()) {
         while(true) {
-            cout << "\r    \r";
+            cout << "\r                               \r";
             cout << sensor->get();
             cout.flush();
             this_thread::sleep_for(ms(500));

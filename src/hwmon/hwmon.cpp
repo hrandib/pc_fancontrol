@@ -19,22 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "hwmon.h"
-#include "sensor_impl.h"
-#include "pwm_impl.h"
+#include "hwmon/hwmon.h"
+#include "hwmon/sensor_impl.h"
+#include "hwmon/pwm_impl.h"
+#include "sysfs/reader_impl.h"
+#include <iostream>
 
+using std::cout, std::endl;
+
+Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
+{
+    optionalPath result = {};
+    for (const auto& entry : fs::directory_iterator(HWMON_ROOT)) {
+        if (!entry.is_directory()) {
+            continue;
+        }
+        auto file = SysfsReaderImpl(entry.path()/"name");
+        cout << entry.path() << ": ";
+        if (file.open() && (file.read() == hwmonName)) {
+            result = entry.path();
+            break;
+        }
+        if (file) {
+            cout << file.read() << endl;
+        }
+    }
+    return result;
+}
 
 Hwmon::Hwmon(sv hwmonName)
 {
-
+    auto result = getHwmonPathByName(hwmonName);
+    if (result) {
+        hwmonPath_ = result.value();
+    } else {
+        throw std::invalid_argument(hwmonName.data());
+    }
 }
 
 Sensor::ptr Hwmon::getSensor(Hwmon::sv sensorName)
 {
-
+    Sensor::ptr result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
+    if (!result->exists()) {
+        result = nullptr;
+    }
+    return result;
 }
 
-Pwm::ptr Hwmon::getPwm(Hwmon::sv pwmName)
+Pwm::ptr Hwmon::getPwm(Hwmon::sv /*pwmName*/)
 {
+    return nullptr;
+}
 
+const fs::path& Hwmon::getHwmonPath()
+{
+    return hwmonPath_;
 }

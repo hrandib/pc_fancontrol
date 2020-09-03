@@ -34,3 +34,8 @@ std::string SysfsReaderImpl::read()
     fstream_.seekg(0);
     return result;
 }
+
+SysfsReaderImpl::operator bool()
+{
+    return fstream_.good();
+}

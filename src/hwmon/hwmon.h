@@ -24,6 +24,7 @@
 
 #include <string_view>
 #include <filesystem>
+#include <optional>
 
 #include "common/constants.h"
 #include "interface/sensor.h"
@@ -35,12 +36,16 @@ class Hwmon
 {
 private:
     using sv = std::string_view;
+    using optionalPath = std::optional<fs::path>;
 
     fs::path hwmonPath_;
+
+    static optionalPath getHwmonPathByName(sv hwmonName);
 public:
     Hwmon(sv hwmonName);
     Sensor::ptr getSensor(sv sensorName);
     Pwm::ptr getPwm(sv pwmName);
+    const fs::path& getHwmonPath();
 //  Tacho::ptr getTacho(sv tachoName);
 };
 

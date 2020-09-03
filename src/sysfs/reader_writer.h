@@ -57,6 +57,8 @@ public:
         return std::atoi(read().c_str());
     }
 
+    virtual explicit operator bool() = 0;
+
     virtual ~SysfsReader();
 };
 

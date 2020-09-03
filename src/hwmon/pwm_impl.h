@@ -24,6 +24,7 @@
 
 #include "sysfs/writer_impl.h"
 #include "interface/pwm.h"
+#include <map>
 
 class PwmImpl : SysfsWriterImpl, public Pwm
 {
@@ -39,9 +40,13 @@ public:
     };
 
 private:
+    using string = std::string;
+    using sv = std::string_view;
+
     static inline constexpr sv ENABLE_SUFFIX = "_enable";
     static inline constexpr sv MODE_SUFFIX = "_mode";
 
+    std::map<string, uint_fast8_t> valueCache_;
     fs::path enablePath_, modePath_;
     uint_fast8_t minPwm_, maxPwm_;
     Mode mode_;
@@ -53,7 +58,8 @@ public:
             Mode mode = Mode::NoChange);
 
     bool open() override;
-    bool set(uint_fast8_t val) override;
+    bool set(uint_fast8_t val, const string& sourceName) override;
+    void reset() override;
     ~PwmImpl() override;
 };
 

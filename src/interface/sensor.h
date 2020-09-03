@@ -30,6 +30,7 @@ struct Sensor
 
     virtual bool open() = 0;
     virtual int32_t get() = 0;
+    virtual bool exists() = 0;
     virtual ~Sensor();
 };
 

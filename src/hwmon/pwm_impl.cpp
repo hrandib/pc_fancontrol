@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "pwm_impl.h"
 #include <cmath>
 
@@ -34,7 +35,7 @@ bool PwmImpl::setMode(Mode mode) {
 
 PwmImpl::PwmImpl(const fs::path& pwmPath,
                  uint_fast8_t min, uint_fast8_t max, Mode mode)
-    : SysfsWriterImpl{pwmPath}, minPwm_{min}, maxPwm_{max}, mode_{mode}
+    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}
 {
     fs::path enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
@@ -50,14 +51,24 @@ bool PwmImpl::open()
     return setControl(Control::Manual) && SysfsWriterImpl::open();
 }
 
-bool PwmImpl::set(uint_fast8_t val)
+bool PwmImpl::set(uint_fast8_t val, const string& sourceName)
 {
     static const auto multiplier = (maxPwm_ - minPwm_)/100.0f;
+    valueCache_[sourceName] = val;
+    auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
+                               [](const auto& a, const auto& b) {
+                                       return std::max(a.second, b.second);});
+    val = it->second;
     uint8_t rawValue{};
     if(val) {
         rawValue = static_cast<uint8_t>(minPwm_ + std::lround(multiplier * val));
     }
     return write(rawValue);
+}
+
+void PwmImpl::reset()
+{
+    valueCache_.clear();
 }
 
 PwmImpl::~PwmImpl()

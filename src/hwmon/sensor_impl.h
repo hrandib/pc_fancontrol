@@ -35,8 +35,11 @@ public:
     bool open() override;
 
     int32_t get() override;
-};
 
+    bool exists() override {
+        return fs::exists(getFilePath());
+    }
+};
 
 template<typename T>
 inline Sensor::ptr make_sensor(const fs::path&);
