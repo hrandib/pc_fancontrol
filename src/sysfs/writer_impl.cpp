@@ -29,7 +29,7 @@ bool SysfsWriterImpl::open()
     return fstream_.good();
 }
 
-bool SysfsWriterImpl::write(uint_fast8_t val)
+bool SysfsWriterImpl::write(uint32_t val)
 {
     fstream_ << val << std::endl;
     return fstream_.good();

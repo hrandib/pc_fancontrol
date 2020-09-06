@@ -1,5 +1,8 @@
 import qbs
 
-Product { name: "test-src"
-    Depends { name: "cpp" }
+Product { name: "test"
+
+    Export {
+        Depends { name: "cpp" }
+    }
 }

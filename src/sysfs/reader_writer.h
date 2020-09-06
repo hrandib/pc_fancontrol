@@ -84,7 +84,7 @@ public:
     }
 
     virtual bool open() = 0;
-    virtual bool write(uint_fast8_t val) = 0;
+    virtual bool write(uint32_t val) = 0;
 
     virtual ~SysfsWriter();
 };

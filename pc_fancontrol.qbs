@@ -11,8 +11,6 @@ CppApplication { name: "fancontrol"
     Depends { name: "src" }
 
     consoleApplication: true
-    cpp.optimization: undefined
-    cpp.debugInformation: false
 
     cpp.cFlags: [
         "-std=c17"
@@ -21,7 +19,7 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-O3", "-Wall", "-Wextra"
+        "-Wall", "-Wextra"
     ]
 
     Group { name: "main"
@@ -42,6 +40,8 @@ CppApplication { name: "fancontrol"
 CppApplication { name: "tests"
     condition: false
     type: base.concat("autotest")
+
+    Depends { name: "test" }
 }
 
 

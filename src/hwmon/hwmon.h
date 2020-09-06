@@ -28,7 +28,7 @@
 
 #include "common/constants.h"
 #include "interface/sensor.h"
-#include "interface/pwm.h"
+#include "hwmon/pwm_impl.h"
 
 namespace fs = std::filesystem;
 
@@ -42,7 +42,10 @@ private:
 
     static optionalPath getHwmonPathByName(sv hwmonName);
 public:
+    Hwmon() : hwmonPath_{}
+    { }
     Hwmon(sv hwmonName);
+    bool setName(sv hwmonName);
     Sensor::ptr getSensor(sv sensorName);
     Pwm::ptr getPwm(sv pwmName);
     const fs::path& getHwmonPath();

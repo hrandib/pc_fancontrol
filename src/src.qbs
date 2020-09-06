@@ -16,7 +16,7 @@ Product { name: "src"
             files: [
                 "constants.h"
             ]
-            cpp.includePaths: outer.concat(FileInfo.joinPaths(product.sourceDirectory,"common"))
+            cpp.includePaths: outer.concat(FileInfo.joinPaths(product.sourceDirectory, "common"))
         }
 
         Group { name: "interface"

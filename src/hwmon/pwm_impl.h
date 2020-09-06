@@ -53,24 +53,49 @@ private:
 
     bool setControl(Control control);
     bool setMode(Mode mode);
+
+    uint_fast8_t selectMaxValue(uint_fast8_t val, const string& sourceName);
 public:
     PwmImpl(const fs::path& pwmPath, uint_fast8_t min, uint_fast8_t max,
             Mode mode = Mode::NoChange);
+    PwmImpl(const fs::path& pwmPath, Mode mode = Mode::NoChange);
 
     bool open() override;
     bool set(uint_fast8_t val, const string& sourceName) override;
     void reset() override;
+
+    void setMin(uint_fast8_t val) override
+    {
+        minPwm_ = val;
+    }
+
+    void setMax(uint_fast8_t val) override
+    {
+        maxPwm_ = val;
+    }
+
+    bool exists() override {
+        return fs::exists(getFilePath());
+    }
+
     ~PwmImpl() override;
 };
 
 template<typename T>
 inline Pwm::ptr make_pwm(const fs::path&, uint_fast8_t, uint_fast8_t,
                          PwmImpl::Mode mode = PwmImpl::Mode::NoChange);
+template<typename T>
+inline Pwm::ptr make_pwm(const fs::path&, PwmImpl::Mode mode = PwmImpl::Mode::NoChange);
 
 template<>
 inline Pwm::ptr make_pwm<PwmImpl>(const fs::path& pwmPath, uint_fast8_t min, uint_fast8_t max,
                                   PwmImpl::Mode mode) {
     return std::make_unique<PwmImpl>(pwmPath, min, max, mode);
+}
+
+template<>
+inline Pwm::ptr make_pwm<PwmImpl>(const fs::path& pwmPath, PwmImpl::Mode mode) {
+    return std::make_unique<PwmImpl>(pwmPath, mode);
 }
 
 #endif // PWMIMPL_H

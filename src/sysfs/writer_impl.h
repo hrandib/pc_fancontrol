@@ -33,7 +33,7 @@ public:
     using SysfsWriter::SysfsWriter;
 
     bool open() override;
-    bool write(uint_fast8_t val) override;
+    bool write(uint32_t val) override;
 
 };
 

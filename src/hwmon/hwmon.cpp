@@ -50,25 +50,35 @@ Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
 Hwmon::Hwmon(sv hwmonName)
 {
     auto result = getHwmonPathByName(hwmonName);
-    if (result) {
+    if(result) {
         hwmonPath_ = result.value();
     } else {
         throw std::invalid_argument(hwmonName.data());
     }
 }
 
+bool Hwmon::setName(Hwmon::sv hwmonName)
+{
+    auto result = getHwmonPathByName(hwmonName);
+    return result.has_value();
+}
+
 Sensor::ptr Hwmon::getSensor(Hwmon::sv sensorName)
 {
     Sensor::ptr result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
-    if (!result->exists()) {
+    if(!result->exists()) {
         result = nullptr;
     }
     return result;
 }
 
-Pwm::ptr Hwmon::getPwm(Hwmon::sv /*pwmName*/)
+Pwm::ptr Hwmon::getPwm(Hwmon::sv pwmName)
 {
-    return nullptr;
+    std::unique_ptr<Pwm> result = std::make_unique<PwmImpl>(getHwmonPath()/pwmName);
+    if(!result->exists()) {
+        result = nullptr;
+    }
+    return result;
 }
 
 const fs::path& Hwmon::getHwmonPath()

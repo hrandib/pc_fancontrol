@@ -25,7 +25,9 @@
 
 bool PwmImpl::setControl(Control control) {
     SysfsWriterImpl writer{enablePath_};
-    return writer.open() && writer.write(static_cast<uint_fast8_t>(control));
+    bool openSuccess = writer.open();
+    bool writeSuccess = writer.write(static_cast<uint_fast8_t>(control));
+    return openSuccess && writeSuccess;
 }
 
 bool PwmImpl::setMode(Mode mode) {
@@ -33,14 +35,26 @@ bool PwmImpl::setMode(Mode mode) {
     return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
 }
 
+uint_fast8_t PwmImpl::selectMaxValue(uint_fast8_t val, const string& sourceName)
+{
+    valueCache_[sourceName] = val;
+    auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
+                               [](const auto& a, const auto& b) {
+                                       return std::max(a.second, b.second);});
+    return it->second;
+}
+
 PwmImpl::PwmImpl(const fs::path& pwmPath,
                  uint_fast8_t min, uint_fast8_t max, Mode mode)
     : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}
 {
-    fs::path enablePath_ = modePath_ = pwmPath;
+    enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
     modePath_ += MODE_SUFFIX;
 }
+
+PwmImpl::PwmImpl(const fs::path &pwmPath, Mode mode) : PwmImpl{pwmPath, 0, 255, mode}
+{ }
 
 bool PwmImpl::open()
 {
@@ -54,14 +68,10 @@ bool PwmImpl::open()
 bool PwmImpl::set(uint_fast8_t val, const string& sourceName)
 {
     static const auto multiplier = (maxPwm_ - minPwm_)/100.0f;
-    valueCache_[sourceName] = val;
-    auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
-                               [](const auto& a, const auto& b) {
-                                       return std::max(a.second, b.second);});
-    val = it->second;
-    uint8_t rawValue{};
+    val = selectMaxValue(val, sourceName);
+    uint_fast8_t rawValue{};
     if(val) {
-        rawValue = static_cast<uint8_t>(minPwm_ + std::lround(multiplier * val));
+        rawValue = static_cast<uint_fast8_t>(minPwm_ + std::lround(multiplier * val));
     }
     return write(rawValue);
 }
