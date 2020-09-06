@@ -3,12 +3,14 @@ import qbs
 Project {
     references: [
         "src/src.qbs",
+        "src/yaml-cpp.qbs",
         "test/test.qbs"
     ]
 
 CppApplication { name: "fancontrol"
 
     Depends { name: "src" }
+    Depends { name: "yaml-cpp" }
 
     consoleApplication: true
 
@@ -38,8 +40,9 @@ CppApplication { name: "fancontrol"
 } //CppApplication
 
 CppApplication { name: "tests"
-    condition: false
     type: base.concat("autotest")
+    condition: false
+    builtByDefault: false
 
     Depends { name: "test" }
 }
