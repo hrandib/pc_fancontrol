@@ -72,9 +72,12 @@ Sensor::ptr Hwmon::getSensor(Hwmon::sv sensorName)
     return result;
 }
 
-Pwm::ptr Hwmon::getPwm(Hwmon::sv pwmName)
+Pwm::ptr Hwmon::getPwm(sv pwmName, uint_fast8_t min, uint_fast8_t max,
+                       Pwm::Mode mode)
 {
-    std::unique_ptr<Pwm> result = std::make_unique<PwmImpl>(getHwmonPath()/pwmName);
+//    std::unique_ptr<PwmImpl> result = std::make_unique<PwmImpl>(getHwmonPath()/pwmName, 90, 255);
+//    cout << result->getFilePath() << endl;
+    Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName, min, max, mode);
     if(!result->exists()) {
         result = nullptr;
     }

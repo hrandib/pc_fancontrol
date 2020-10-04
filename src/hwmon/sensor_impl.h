@@ -46,7 +46,7 @@ inline Sensor::ptr make_sensor(const fs::path&);
 
 template<>
 inline Sensor::ptr make_sensor<SensorImpl>(const fs::path& path) {
-    return std::make_unique<SensorImpl>(path);
+    return std::make_shared<SensorImpl>(path);
 }
 
 #endif // SENSORIMPL_H

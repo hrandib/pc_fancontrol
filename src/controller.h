@@ -19,19 +19,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef SENSOR_H
-#define SENSOR_H
 
-#include <memory>
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
-struct Sensor
+#include "interface/pwm.h"
+#include "interface/sensor.h"
+#include "configentry.h"
+
+class Controller
 {
-    using ptr = std::shared_ptr<Sensor>;
+    using string = std::string;
 
-    virtual bool open() = 0;
-    virtual int32_t get() = 0;
-    virtual bool exists() = 0;
-    virtual ~Sensor();
+    string name_;
+    const ConfigEntry& config_;
+public:
+    Controller(string name, const ConfigEntry& conf) : name_{name}, config_{conf}
+    {  }
 };
 
-#endif // SENSOR_H
+#endif // CONTROLLER_H

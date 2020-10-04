@@ -47,7 +47,8 @@ public:
     Hwmon(sv hwmonName);
     bool setName(sv hwmonName);
     Sensor::ptr getSensor(sv sensorName);
-    Pwm::ptr getPwm(sv pwmName);
+    Pwm::ptr getPwm(sv pwmName, uint_fast8_t min, uint_fast8_t max,
+                    Pwm::Mode mode);
     const fs::path& getHwmonPath();
 //  Tacho::ptr getTacho(sv tachoName);
 };

@@ -13,6 +13,8 @@ CppApplication { name: "fancontrol"
     Depends { name: "yaml-cpp" }
 
     consoleApplication: true
+    cpp.optimization: undefined
+    cpp.debugInformation: true
 
     cpp.cFlags: [
         "-std=c17"
@@ -21,13 +23,16 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-Wall", "-Wextra"
+        "-O0", "-Wall", "-Wextra"
     ]
 
     Group { name: "main"
         prefix: "src/"
         files: [
-            "main.cpp"
+            "controller.cpp",
+            "controller.h",
+            "configentry.h",
+            "main.cpp",
         ]
     }
 

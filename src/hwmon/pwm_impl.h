@@ -29,11 +29,6 @@
 class PwmImpl : SysfsWriterImpl, public Pwm
 {
 public:
-    enum class Mode {
-        Dc,
-        Pwm,
-        NoChange
-    };
     enum class Control {
         Manual = 1,
         Auto = 2
@@ -89,8 +84,9 @@ inline Pwm::ptr make_pwm(const fs::path&, PwmImpl::Mode mode = PwmImpl::Mode::No
 
 template<>
 inline Pwm::ptr make_pwm<PwmImpl>(const fs::path& pwmPath, uint_fast8_t min, uint_fast8_t max,
-                                  PwmImpl::Mode mode) {
-    return std::make_unique<PwmImpl>(pwmPath, min, max, mode);
+                                  Pwm::Mode mode)
+{
+    return std::make_shared<PwmImpl>(pwmPath, min, max, mode);
 }
 
 template<>

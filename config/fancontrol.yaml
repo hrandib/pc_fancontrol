@@ -16,12 +16,15 @@ pwm:
   - cha: { type: it8665, mode: pwm, bind: pwm2, minpwm: 70, maxpwm: 255 }
 
 controller:
-  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: 2point, poll: { time: 5s, ma_samples: 4 },
+  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },
       set: { temp_a: 40, temp_b: 75 }
     }
-  - cha: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
+  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
       set: { temp: 42, p: 10, i: 5 }
     }
+  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
+    set: { { 40, 0 }, { 50, 50 }, { 60, 100 } }
+  }
 
 daemon_conf:
   - mqtt_telemetry: { enable: true, broker: localhost, port: 1883, prefix: serv_fanctrl }

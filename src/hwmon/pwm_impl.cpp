@@ -22,15 +22,18 @@
 
 #include "pwm_impl.h"
 #include <cmath>
+#include <iostream>
 
-bool PwmImpl::setControl(Control control) {
+bool PwmImpl::setControl(Control control)
+{
     SysfsWriterImpl writer{enablePath_};
     bool openSuccess = writer.open();
     bool writeSuccess = writer.write(static_cast<uint_fast8_t>(control));
     return openSuccess && writeSuccess;
 }
 
-bool PwmImpl::setMode(Mode mode) {
+bool PwmImpl::setMode(Mode mode)
+{
     SysfsWriterImpl writer{modePath_};
     return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
 }
@@ -72,6 +75,7 @@ bool PwmImpl::set(uint_fast8_t val, const string& sourceName)
     uint_fast8_t rawValue{};
     if(val) {
         rawValue = static_cast<uint_fast8_t>(minPwm_ + std::lround(multiplier * val));
+        std::cout << rawValue << std::endl;
     }
     return write(rawValue);
 }

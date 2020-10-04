@@ -19,19 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef SENSOR_H
-#define SENSOR_H
 
-#include <memory>
+#include "controller.h"
 
-struct Sensor
-{
-    using ptr = std::shared_ptr<Sensor>;
+//Controller::Controller()
+//{
 
-    virtual bool open() = 0;
-    virtual int32_t get() = 0;
-    virtual bool exists() = 0;
-    virtual ~Sensor();
-};
-
-#endif // SENSOR_H
+//}
