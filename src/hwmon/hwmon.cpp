@@ -38,6 +38,7 @@ Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
         cout << entry.path() << ": ";
         if (file.open() && (file.read() == hwmonName)) {
             result = entry.path();
+            cout << file.read() << endl;
             break;
         }
         if (file) {

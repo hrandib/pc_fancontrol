@@ -27,15 +27,71 @@
 #include "interface/sensor.h"
 #include "configentry.h"
 
+#include <thread>
+#include <chrono>
+#include <iostream>
+
+struct ControlAlgo {
+    virtual uint32_t set(int32_t) = 0;
+};
+
+class AlgoTwoPoint : public ControlAlgo {
+    uint32_t a, b;
+public:
+    AlgoTwoPoint(uint32_t a, uint32_t b) : a{a}, b{b}
+    {  }
+    uint32_t set(int32_t temp) override
+    {
+        static const double k = 100.0/(b - a);
+        int32_t norm_temp = temp - (int32_t)a;
+        if(temp >= b) {
+            return 100;
+        }
+        else if(norm_temp > 0) {
+            return static_cast<uint32_t>(norm_temp * k);
+        } else {
+            return 1;
+        }
+    }
+};
+
+
 class Controller
 {
     using string = std::string;
+    using ms = std::chrono::milliseconds;
+    using s = std::chrono::seconds;
 
     string name_;
     const ConfigEntry& config_;
+    std::unique_ptr<ControlAlgo> algo_;
 public:
     Controller(string name, const ConfigEntry& conf) : name_{name}, config_{conf}
-    {  }
+    {
+        switch(conf.GetMode()) {
+        case ConfigEntry::SETMODE_MULTI_POINT:
+        case ConfigEntry::SETMODE_PI:
+        case ConfigEntry::SETMODE_TWO_POINT:
+            ConfigEntry::TwoPointConfMode mode
+                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(conf.GetModeConfig());
+            algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
+            break;
+        }
+    }
+
+    [[noreturn]]
+    void run()
+    {
+        while(true) {
+            int32_t temp = config_.getSensors()[0]->get();
+            std::cout << temp << " deg ";
+            uint32_t setValue = algo_->set(temp);
+            std::cout << setValue << " pwm%\n";
+            config_.GetPwms()[0]->set(static_cast<uint_fast8_t>(setValue), name_);
+            std::this_thread::sleep_for(s(config_.GetPollConfig().timeSecs));
+        }
+    }
+
 };
 
 #endif // CONTROLLER_H

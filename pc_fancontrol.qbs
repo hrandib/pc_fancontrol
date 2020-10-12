@@ -9,12 +9,12 @@ Project {
 
 CppApplication { name: "fancontrol"
 
-    Depends { name: "src" }
     Depends { name: "yaml-cpp" }
+    Depends { name: "src" }
 
     consoleApplication: true
     cpp.optimization: undefined
-    cpp.debugInformation: true
+    cpp.debugInformation: false
 
     cpp.cFlags: [
         "-std=c17"
@@ -23,7 +23,7 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-O0", "-Wall", "-Wextra"
+        "-O3", "-Wall", "-Wextra"
     ]
 
     Group { name: "main"
@@ -32,6 +32,8 @@ CppApplication { name: "fancontrol"
             "controller.cpp",
             "controller.h",
             "configentry.h",
+            "config.cpp",
+            "config.h",
             "main.cpp",
         ]
     }

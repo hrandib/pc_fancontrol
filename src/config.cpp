@@ -19,38 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef HWMON_H
-#define HWMON_H
 
-#include <string_view>
-#include <filesystem>
-#include <optional>
+#include "config.h"
 
-#include "common/constants.h"
-#include "interface/sensor.h"
-#include "hwmon/pwm_impl.h"
-
-namespace fs = std::filesystem;
-
-class Hwmon
+Config::Config()
 {
-private:
-    using sv = std::string_view;
-    using optionalPath = std::optional<fs::path>;
 
-    fs::path hwmonPath_;
-
-    static optionalPath getHwmonPathByName(sv hwmonName);
-public:
-    Hwmon() : hwmonPath_{}
-    { }
-    Hwmon(sv hwmonName);
-    bool setName(sv hwmonName);
-    Sensor::ptr getSensor(sv sensorName);
-    Pwm::ptr getPwm(sv pwmName, uint_fast8_t min, uint_fast8_t max,
-                    Pwm::Mode mode = Pwm::Mode::NoChange);
-    const fs::path& getHwmonPath();
-//  Tacho::ptr getTacho(sv tachoName);
-};
-
-#endif // HWMON_H
+}

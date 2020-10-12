@@ -2,21 +2,22 @@ import qbs
 import qbs.FileInfo
 
 Product { name: "yaml-cpp"
+
     Export {
         Depends { name: "cpp" }
 
         cpp.includePaths: [
-            "yaml-cpp/include"
+            FileInfo.joinPaths(product.sourceDirectory, "yaml-cpp/include")
         ]
 
-        Group { name: "inc"
+        Group { name: "yaml-inc"
             prefix: "yaml-cpp/"
             files: [
                 "include/yaml-cpp/**/*.h",
                 "src/**/*.h"
             ]
         }
-        Group { name: "src"
+        Group { name: "yaml-src"
             prefix: "yaml-cpp/src/"
             files: [
                 "**/*.cpp"

@@ -75,7 +75,7 @@ bool PwmImpl::set(uint_fast8_t val, const string& sourceName)
     uint_fast8_t rawValue{};
     if(val) {
         rawValue = static_cast<uint_fast8_t>(minPwm_ + std::lround(multiplier * val));
-        std::cout << rawValue << std::endl;
+        std::cout << (uint32_t)rawValue << std::endl;
     }
     return write(rawValue);
 }

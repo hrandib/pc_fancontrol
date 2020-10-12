@@ -123,18 +123,29 @@ public:
         return *this;
     }
 
-    SetMode GetMode()
+    SetMode GetMode() const
     {
         return static_cast<SetMode>(modeConf_.index());
     }
 
-    const PollConf& getPollConfig()
+    const PollConf& GetPollConfig() const
     {
         return pollConf_;
     }
 
-    const ModeConf& getModeConfig() {
+    const ModeConf& GetModeConfig() const
+    {
         return modeConf_;
+    }
+
+    const PwmVec& GetPwms() const
+    {
+        return pwms_;
+    }
+
+    const SenseVec& getSensors() const
+    {
+       return sensors_;
     }
 };
 
