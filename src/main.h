@@ -20,11 +20,29 @@
  * SOFTWARE.
  */
 
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <fstream>
+#include <vector>
+#include <string_view>
+#include <cstddef>
+#include <string>
+#include <algorithm>
+#include <numeric>
+#include <iomanip>
+
+#include "sysfs/writer_impl.h"
+#include "sysfs/reader_impl.h"
+#include "hwmon/sensor_impl.h"
+#include "hwmon/pwm_impl.h"
+#include "hwmon/hwmon.h"
+#include "config.h"
 #include "controller.h"
+#include "cstdio"
+#include "signal.h"
 
-//Controller::Controller()
-//{
-
-//}
-
-std::atomic_bool Controller::breakExecution_;
+#endif // MAIN_H

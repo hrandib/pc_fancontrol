@@ -59,12 +59,12 @@ public:
         uint32_t timeSecs, samplesCount;
     };
 private:
-    using SenseVec = std::vector<Sensor::ptr>;
-    using PwmVec = std::vector<Pwm::ptr>;
+    using Sensors = std::vector<Sensor::ptr>;
+    using Pwms = std::vector<Pwm::ptr>;
     using ModeConf = std::variant<PiConfMode, TwoPointConfMode, MultiPointConfMode>;
 
-    SenseVec sensors_;
-    PwmVec pwms_;
+    Sensors sensors_;
+    Pwms pwms_;
     ModeConf modeConf_;
     PollConf pollConf_;
 public:
@@ -138,12 +138,12 @@ public:
         return modeConf_;
     }
 
-    const PwmVec& GetPwms() const
+    const Pwms& GetPwms() const
     {
         return pwms_;
     }
 
-    const SenseVec& getSensors() const
+    const Sensors& getSensors() const
     {
        return sensors_;
     }

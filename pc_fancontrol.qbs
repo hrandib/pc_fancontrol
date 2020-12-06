@@ -26,6 +26,10 @@ CppApplication { name: "fancontrol"
         "-O3", "-Wall", "-Wextra"
     ]
 
+    cpp.dynamicLibraries: [
+        "pthread"
+    ]
+
     Group { name: "main"
         prefix: "src/"
         files: [
@@ -35,6 +39,7 @@ CppApplication { name: "fancontrol"
             "config.cpp",
             "config.h",
             "main.cpp",
+            "main.h",
         ]
     }
 

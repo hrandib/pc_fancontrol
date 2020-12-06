@@ -30,20 +30,21 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <numeric>
 
 struct ControlAlgo {
-    virtual uint32_t set(int32_t) = 0;
+    virtual uint32_t getSetting(int32_t) = 0;
 };
 
 class AlgoTwoPoint : public ControlAlgo {
-    uint32_t a, b;
+    int32_t a, b;
 public:
-    AlgoTwoPoint(uint32_t a, uint32_t b) : a{a}, b{b}
+    AlgoTwoPoint(int32_t a, int32_t b) : a{a}, b{b}
     {  }
-    uint32_t set(int32_t temp) override
+    uint32_t getSetting(int32_t temp) override
     {
         static const double k = 100.0/(b - a);
-        int32_t norm_temp = temp - (int32_t)a;
+        int32_t norm_temp = temp - a;
         if(temp >= b) {
             return 100;
         }
@@ -55,16 +56,45 @@ public:
     }
 };
 
-
 class Controller
 {
     using string = std::string;
     using ms = std::chrono::milliseconds;
     using s = std::chrono::seconds;
 
+    static std::atomic_bool breakExecution_;
+
     string name_;
     const ConfigEntry& config_;
     std::unique_ptr<ControlAlgo> algo_;
+    std::thread processingThread_;
+
+    void handle() {
+        while(!breakExecution_) {
+            int32_t temp = getHighestTemp();
+            std::cout << temp << " deg ";
+            uint32_t normalizedValue = algo_->getSetting(temp);
+            std::cout << normalizedValue << " pwm%\n";
+            setAllPwms(normalizedValue);
+            std::this_thread::sleep_for(s(config_.GetPollConfig().timeSecs));
+        }
+    }
+
+    int32_t getHighestTemp() {
+        auto sensors = config_.getSensors();
+        auto highest = std::max_element(sensors.cbegin(), sensors.cend(),
+                                        [](auto& sensor_a, auto& sensor_b) {
+            return sensor_a > sensor_b;
+        });
+        return (*highest)->get();
+    }
+
+    void setAllPwms(uint32_t value) {
+        for(auto& pwm : config_.GetPwms()) {
+            pwm->set(static_cast<uint_fast8_t>(value), name_);
+        }
+    }
+
 public:
     Controller(string name, const ConfigEntry& conf) : name_{name}, config_{conf}
     {
@@ -79,19 +109,18 @@ public:
         }
     }
 
-    [[noreturn]]
-    void run()
-    {
-        while(true) {
-            int32_t temp = config_.getSensors()[0]->get();
-            std::cout << temp << " deg ";
-            uint32_t setValue = algo_->set(temp);
-            std::cout << setValue << " pwm%\n";
-            config_.GetPwms()[0]->set(static_cast<uint_fast8_t>(setValue), name_);
-            std::this_thread::sleep_for(s(config_.GetPollConfig().timeSecs));
-        }
+    void run() {
+        processingThread_ = std::thread{&Controller::handle, this};
     }
 
+    ~Controller() {
+        processingThread_.join();
+        std::cout << "Controller " << name_ << " finished\n";
+    }
+
+    static void stop() {
+        breakExecution_ = true;
+    }
 };
 
 #endif // CONTROLLER_H

@@ -27,4 +27,4 @@ controller:
   }
 
 daemon_conf:
-  - mqtt_telemetry: { enable: true, broker: localhost, port: 1883, prefix: serv_fanctrl }
+  - mqtt_telemetry: { enable: false, broker: localhost, port: 1883, topic: serv_fanctrl }
