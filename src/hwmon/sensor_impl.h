@@ -24,11 +24,16 @@
 
 #include "interface/sensor.h"
 #include "sysfs/reader_impl.h"
+#include <atomic>
 
 class SensorImpl : SysfsReaderImpl, public Sensor
 {
 private:
     static inline constexpr sv PATH_SUFFIX = "_input";
+    static inline constexpr std::chrono::milliseconds READ_PERIOD{500};
+
+    std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};
+    std::atomic_int cachedVal_;
 public:
     SensorImpl(const fs::path& path);
 

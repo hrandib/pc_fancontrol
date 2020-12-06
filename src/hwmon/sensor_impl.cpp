@@ -33,5 +33,10 @@ bool SensorImpl::open()
 
 int32_t SensorImpl::get()
 {
-    return readNumber()/1000;
+    auto now = std::chrono::system_clock::now();
+    if (now > READ_PERIOD + prevReadTime_) {
+        cachedVal_ = readNumber()/1000;
+        prevReadTime_ = now;
+    }
+    return cachedVal_;
 }
