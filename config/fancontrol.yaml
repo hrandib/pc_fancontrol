@@ -1,30 +1,70 @@
 ---
 
+# /sys/class/hwmon node, uses the 'name' file content for binding
 hwmon:
  - it8665
  - k10temp
  - amdgpu
 
+# Sensor binding
+# Sensor types:
+# 1. hwmon node, 'type' points to hwmon entry, 'bind' points to the file name which should be read
+# 2. shell_cmd type, uses shell command to retrieve sensor data
 sensor:
   - cpu: { type: it8665, bind: temp1 }
   - mb: { type: it8665, bind: temp2 }
   - wd12: { type: shell_cmd, bind: "hddtemp /dev/sdd | tail -c 6 | head -c -4" }
   - wd8: { type: shell_cmd, bind: "hddtemp /dev/sdc | tail -c 6 | head -c -4" }
 
+# PWM channel binding
+# type: hwmon node entry, defined in 'hwmon' section
+# mode: 'dc' - DC mode channel mode, 'pwm' - PWM channel mode
+# bind: points to the file name which will be used for control
+# minpwm, maxpwm: allowed values range, corresponds to the range of used fan
 pwm:
   - cpu: { type: it8665, mode: dc, bind: pwm1, minpwm: 70, maxpwm: 255 }
   - cha: { type: it8665, mode: pwm, bind: pwm2, minpwm: 70, maxpwm: 255 }
 
+# Controller binding
+# sensor: Sensor binding entry. Can be multiple, highest temperature will be used as reference
+# pwm: PWM channel binding entry. Can be multiple
+# mode: control algorithm, possible values:
+# 1. two_point - simple 2 point curve transformation
+# 2. multi_point - arbitrary amount of approximation points (not implemented yet)
+# 3. pi - proporional-integral control algorithm (not implemented yet)
+#
+# poll: polling options, can contain:
+# 1. time - sampling time in seconds, default value = 1s
+# 2. ma_samples - amount of samples for moving average sensor reading mode, disabled if not exist
+#
+# set: special options for selected control algorithm (mode)
+# 1. For 'two_point' contain min and max allowed temperature: temp_a, temp_b
+# - min temperature maps to the 'minpwm' value
+# - max temperature maps to the 'maxpwm' value
+# - optionally can contain 'off' boolean option, if 'off' = true, the fan can be completely stopped
+# if temperature is below temp_a. Default value: false
+#
+# 2. For "multi_point' contain the points array, each point contain temperature and pwm value
+# pwm value is defined in percents between minpwm and maxpwm value, e.g
+# if minwm=100, maxpwm=200 the point {50, 30} will declare that at 50C
+# the raw pwm value should be 130
+# optionally also can have 'off' boolean option
+#
+# 3. For 'pi' contain:
+# temp - desired temperature setting
+# p - proporional coefficient
+# i - integral coefficient
 controller:
   - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },
-      set: { temp_a: 40, temp_b: 75 }
+      set: { temp_a: 40, temp_b: 75, off: true }
     }
   - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
       set: { temp: 42, p: 10, i: 5 }
     }
   - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
-    set: { { 40, 0 }, { 50, 50 }, { 60, 100 } }
+    set: { map: {{ 40, 0 }, { 50, 50 }, { 60, 100 }}, off: true }
   }
 
+# Utility options (not implemented yet)
 daemon_conf:
   - mqtt_telemetry: { enable: false, broker: localhost, port: 1883, topic: serv_fanctrl }
