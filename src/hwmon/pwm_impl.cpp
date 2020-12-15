@@ -32,7 +32,7 @@ bool PwmImpl::setControl(Control control)
     return openSuccess && writeSuccess;
 }
 
-bool PwmImpl::setMode(Mode mode)
+bool PwmImpl::activateMode(Mode mode)
 {
     SysfsWriterImpl writer{modePath_};
     return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
@@ -56,14 +56,14 @@ PwmImpl::PwmImpl(const fs::path& pwmPath,
     modePath_ += MODE_SUFFIX;
 }
 
-PwmImpl::PwmImpl(const fs::path &pwmPath, Mode mode) : PwmImpl{pwmPath, 0, 255, mode}
+PwmImpl::PwmImpl(const fs::path &pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
 { }
 
 bool PwmImpl::open()
 {
     if(mode_ != Mode::NoChange) {
         //TODO: log set mode not supported
-        setMode(mode_);
+        activateMode(mode_);
     }
     return setControl(Control::Manual) && SysfsWriterImpl::open();
 }

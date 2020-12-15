@@ -26,6 +26,7 @@
 #include <iostream>
 
 using std::cout, std::endl;
+using std::literals::string_literals::operator""s;
 
 Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
 {
@@ -35,14 +36,10 @@ Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
             continue;
         }
         auto file = SysfsReaderImpl(entry.path()/"name");
-        cout << entry.path() << ": ";
         if (file.open() && (file.read() == hwmonName)) {
             result = entry.path();
-            cout << file.read() << endl;
+            cout << entry << "\n";
             break;
-        }
-        if (file) {
-            cout << file.read() << endl;
         }
     }
     return result;
@@ -54,33 +51,53 @@ Hwmon::Hwmon(sv hwmonName)
     if(result) {
         hwmonPath_ = result.value();
     } else {
-        throw std::invalid_argument(hwmonName.data());
+        throw std::invalid_argument("hwmon construction failed: "s + hwmonName.data());
     }
 }
 
-bool Hwmon::setName(Hwmon::sv hwmonName)
+bool Hwmon::setName(sv hwmonName)
 {
     auto result = getHwmonPathByName(hwmonName);
+    if (result) {
+        hwmonPath_ = result.value();
+    }
     return result.has_value();
 }
 
-Sensor::ptr Hwmon::getSensor(Hwmon::sv sensorName)
+Sensor::ptr Hwmon::getSensor(sv sensorName)
 {
-    Sensor::ptr result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
-    if(!result->exists()) {
-        result = nullptr;
+    Sensor::ptr result;
+    std::string sensor{sensorName};
+    if(sensorCache_.contains(sensor)) {
+        result = sensorCache_[sensor];
+    }
+    else {
+        Sensor::ptr result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
+        if(result->exists()) {
+            sensorCache_[sensor] = result;
+        }
+        else {
+            result = nullptr;
+        }
     }
     return result;
 }
 
-Pwm::ptr Hwmon::getPwm(sv pwmName, uint_fast8_t min, uint_fast8_t max,
-                       Pwm::Mode mode)
+Pwm::ptr Hwmon::getPwm(sv pwmName)
 {
-//    std::unique_ptr<PwmImpl> result = std::make_unique<PwmImpl>(getHwmonPath()/pwmName, 90, 255);
-//    cout << result->getFilePath() << endl;
-    Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName, min, max, mode);
-    if(!result->exists()) {
-        result = nullptr;
+    Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
+    std::string pwm{pwmName};
+    if(pwmCache_.contains(pwm)) {
+        result = pwmCache_[pwm];
+    }
+    else {
+        Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
+        if(result->exists()) {
+            pwmCache_[pwm] = result;
+        }
+        else {
+            result = nullptr;
+        }
     }
     return result;
 }

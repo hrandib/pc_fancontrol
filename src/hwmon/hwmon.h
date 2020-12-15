@@ -32,13 +32,15 @@
 
 namespace fs = std::filesystem;
 
-class Hwmon
+class Hwmon //: public SensorFactory
 {
 private:
     using sv = std::string_view;
     using optionalPath = std::optional<fs::path>;
 
     fs::path hwmonPath_;
+    std::map<std::string, Sensor::ptr> sensorCache_{};
+    std::map<std::string, Pwm::ptr> pwmCache_{};
 
     static optionalPath getHwmonPathByName(sv hwmonName);
 public:
@@ -47,8 +49,7 @@ public:
     Hwmon(sv hwmonName);
     bool setName(sv hwmonName);
     Sensor::ptr getSensor(sv sensorName);
-    Pwm::ptr getPwm(sv pwmName, uint_fast8_t min, uint_fast8_t max,
-                    Pwm::Mode mode = Pwm::Mode::NoChange);
+    Pwm::ptr getPwm(sv pwmName);
     const fs::path& getHwmonPath();
 //  Tacho::ptr getTacho(sv tachoName);
 };

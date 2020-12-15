@@ -10,7 +10,7 @@ hwmon:
 # Sensor types:
 # 1. hwmon node, 'type' points to hwmon entry, 'bind' points to the file name which should be read
 # 2. shell_cmd type, uses shell command to retrieve sensor data
-sensor:
+sensors:
   - cpu: { type: it8665, bind: temp1 }
   - mb: { type: it8665, bind: temp2 }
   - wd12: { type: shell_cmd, bind: "hddtemp /dev/sdd | tail -c 6 | head -c -4" }
@@ -21,7 +21,7 @@ sensor:
 # mode: 'dc' - DC mode channel mode, 'pwm' - PWM channel mode
 # bind: points to the file name which will be used for control
 # minpwm, maxpwm: allowed values range, corresponds to the range of used fan
-pwm:
+pwms:
   - cpu: { type: it8665, mode: dc, bind: pwm1, minpwm: 70, maxpwm: 255 }
   - cha: { type: it8665, mode: pwm, bind: pwm2, minpwm: 70, maxpwm: 255 }
 
@@ -52,7 +52,7 @@ pwm:
 #
 # 3. For 'pi' contain:
 # temp - desired temperature setting
-# p - proporional coefficient
+# p - proportional coefficient
 # i - integral coefficient
 controller:
   - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },

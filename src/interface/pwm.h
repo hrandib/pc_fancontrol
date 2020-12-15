@@ -40,6 +40,7 @@ struct Pwm
     virtual bool set(uint_fast8_t val, const string& sourceName) = 0;
     virtual void setMin(uint_fast8_t val) = 0;
     virtual void setMax(uint_fast8_t val) = 0;
+    virtual void setMode(Mode mode) = 0;
     virtual void reset() = 0;
     virtual bool exists() = 0;
     virtual ~Pwm();

@@ -25,11 +25,37 @@
 
 #include "configentry.h"
 #include "yaml-cpp/yaml.h"
+#include "hwmon/hwmon.h"
+#include "controller.h"
+
+#include <filesystem>
+#include <optional>
+
+using OptionalNode = std::optional<YAML::Node>;
 
 class Config
 {
 public:
-    Config();
+    using path = std::filesystem::path;
+    using string = std::string;
+    using HwmonMap = std::map<std::string, Hwmon>;
+    using SensorMap = std::map<std::string, Sensor::ptr>;
+    using PwmMap = std::map<std::string, Pwm::ptr>;
+    using Node = YAML::Node;
+
+    Config(const std::string& configPath);
+private:
+    Node rootNode_;
+    HwmonMap hwmonMap_;
+    SensorMap sensorMap_;
+    PwmMap pwmMap_;
+    std::vector<Controller> controllers_;
+
+    void parseHwmon();
+    void parseSensors();
+    void parsePwms();
+    void parseControllers();
+    Node getNode(const string& nodeName) const;
 };
 
 #endif // CONFIG_H
