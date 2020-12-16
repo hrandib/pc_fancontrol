@@ -51,10 +51,10 @@ private:
     PwmMap pwmMap_;
     std::vector<Controller> controllers_;
 
-    void parseHwmon();
-    void parseSensors();
-    void parsePwms();
-    void parseControllers();
+    void createHwmons();
+    void createSensors();
+    void createPwms();
+    void createControllers();
     Node getNode(const string& nodeName) const;
 };
 

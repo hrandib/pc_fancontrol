@@ -24,6 +24,18 @@
 #include <cmath>
 #include <iostream>
 
+PwmImpl::PwmImpl(const fs::path& pwmPath,
+                 int min, int max, Mode mode)
+    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}
+{
+    enablePath_ = modePath_ = pwmPath;
+    enablePath_ += ENABLE_SUFFIX;
+    modePath_ += MODE_SUFFIX;
+}
+
+PwmImpl::PwmImpl(const fs::path &pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
+{ }
+
 bool PwmImpl::setControl(Control control)
 {
     SysfsWriterImpl writer{enablePath_};
@@ -38,7 +50,7 @@ bool PwmImpl::activateMode(Mode mode)
     return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
 }
 
-uint_fast8_t PwmImpl::selectMaxValue(uint_fast8_t val, const string& sourceName)
+int PwmImpl::selectMaxValue(int val, const string& sourceName)
 {
     valueCache_[sourceName] = val;
     auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
@@ -46,18 +58,6 @@ uint_fast8_t PwmImpl::selectMaxValue(uint_fast8_t val, const string& sourceName)
                                        return std::max(a.second, b.second);});
     return it->second;
 }
-
-PwmImpl::PwmImpl(const fs::path& pwmPath,
-                 uint_fast8_t min, uint_fast8_t max, Mode mode)
-    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}
-{
-    enablePath_ = modePath_ = pwmPath;
-    enablePath_ += ENABLE_SUFFIX;
-    modePath_ += MODE_SUFFIX;
-}
-
-PwmImpl::PwmImpl(const fs::path &pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
-{ }
 
 bool PwmImpl::open()
 {
@@ -68,16 +68,16 @@ bool PwmImpl::open()
     return setControl(Control::Manual) && SysfsWriterImpl::open();
 }
 
-bool PwmImpl::set(uint_fast8_t val, const string& sourceName)
+bool PwmImpl::set(int val, const string& sourceName)
 {
-    static const auto multiplier = (maxPwm_ - minPwm_)/100.0f;
+    static const auto multiplier = (maxPwm_ - minPwm_)/100.0;
     val = selectMaxValue(val, sourceName);
-    uint_fast8_t rawValue{};
+    int rawValue{};
     if(val) {
-        rawValue = static_cast<uint_fast8_t>(minPwm_ + std::lround(multiplier * val));
-        std::cout << (uint32_t)rawValue << std::endl;
+        rawValue = static_cast<int>(minPwm_ + std::lround(multiplier * val));
+        std::cout << rawValue << std::endl;
     }
-    return write(rawValue);
+    return write(static_cast<uint32_t>(rawValue));
 }
 
 void PwmImpl::reset()

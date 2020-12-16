@@ -33,7 +33,7 @@
 #include <numeric>
 
 struct ControlAlgo {
-    virtual uint32_t getSetting(int32_t) = 0;
+    virtual uint32_t getSetpoint(int32_t) = 0;
 };
 
 class AlgoTwoPoint : public ControlAlgo {
@@ -41,7 +41,7 @@ class AlgoTwoPoint : public ControlAlgo {
 public:
     AlgoTwoPoint(int32_t a, int32_t b) : a{a}, b{b}
     {  }
-    uint32_t getSetting(int32_t temp) override
+    uint32_t getSetpoint(int32_t temp) override
     {
         static const double k = 100.0/(b - a);
         int32_t norm_temp = temp - a;
@@ -50,7 +50,8 @@ public:
         }
         else if(norm_temp > 0) {
             return static_cast<uint32_t>(norm_temp * k);
-        } else {
+        }
+        else {
             return 1;
         }
     }
@@ -73,10 +74,10 @@ class Controller
         while(!breakExecution_) {
             int32_t temp = getHighestTemp();
             std::cout << temp << " deg ";
-            uint32_t normalizedValue = algo_->getSetting(temp);
+            uint32_t normalizedValue = algo_->getSetpoint(temp);
             std::cout << normalizedValue << " pwm%\n";
             setAllPwms(normalizedValue);
-            std::this_thread::sleep_for(s(config_.GetPollConfig().timeSecs));
+            std::this_thread::sleep_for(s(config_.GetPollConfig().timeMsecs));
         }
     }
 

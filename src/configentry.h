@@ -32,9 +32,9 @@ class ConfigEntry
 {
 public:
     enum SetMode {
-        SETMODE_PI,
         SETMODE_TWO_POINT,
-        SETMODE_MULTI_POINT
+        SETMODE_MULTI_POINT,
+        SETMODE_PI
     };
 
     struct PiConfMode {
@@ -50,23 +50,25 @@ public:
         std::vector<std::pair<uint32_t, uint32_t>> pointVec;
     };
 
+    using ModeConf = std::variant<TwoPointConfMode, MultiPointConfMode, PiConfMode>;
+
     struct PollConf {
         enum PollMode {
             PollSimple,
             PollMovingAverage
         };
         PollMode mode;
-        uint32_t timeSecs, samplesCount;
+        int timeMsecs, samplesCount;
     };
 private:
     using Sensors = std::vector<Sensor::ptr>;
     using Pwms = std::vector<Pwm::ptr>;
-    using ModeConf = std::variant<PiConfMode, TwoPointConfMode, MultiPointConfMode>;
 
     Sensors sensors_;
     Pwms pwms_;
     ModeConf modeConf_;
     PollConf pollConf_;
+    bool autoOff_;
 public:
 
     ConfigEntry& SetPiConfMode(uint32_t temp, uint32_t p, uint32_t i)
@@ -84,6 +86,12 @@ public:
     ConfigEntry& SetMultiPointConfMode()
     {
         modeConf_ = MultiPointConfMode{};
+        return *this;
+    }
+
+    ConfigEntry& SetAutoOff(bool autoOff)
+    {
+        autoOff_ = autoOff;
         return *this;
     }
 
@@ -108,18 +116,24 @@ public:
         return *this;
     }
 
-    ConfigEntry& SetPollConfig(PollConf::PollMode mode, uint32_t pollTime, uint32_t samplesCount)
+    ConfigEntry& SetPollConfig(PollConf::PollMode mode, int pollTime, int samplesCount)
     {
         pollConf_.mode = mode;
-        pollConf_.timeSecs = pollTime;
+        pollConf_.timeMsecs = pollTime;
         pollConf_.samplesCount = samplesCount;
         return *this;
     }
 
-    ConfigEntry& SetPollConfig(uint32_t pollTime)
+    ConfigEntry& SetPollConfig(const PollConf& conf)
+    {
+        pollConf_ = conf;
+        return *this;
+    }
+
+    ConfigEntry& SetPollConfig(int pollTime)
     {
         pollConf_.mode = PollConf::PollSimple;
-        pollConf_.timeSecs = pollTime;
+        pollConf_.timeMsecs = pollTime;
         return *this;
     }
 
@@ -146,6 +160,11 @@ public:
     const Sensors& getSensors() const
     {
        return sensors_;
+    }
+
+    bool getAutoOff()
+    {
+        return autoOff_;
     }
 };
 

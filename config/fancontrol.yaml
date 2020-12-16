@@ -22,8 +22,8 @@ sensors:
 # bind: points to the file name which will be used for control
 # minpwm, maxpwm: allowed values range, corresponds to the range of used fan
 pwms:
-  - cpu: { type: it8665, mode: dc, bind: pwm1, minpwm: 70, maxpwm: 255 }
-  - cha: { type: it8665, mode: pwm, bind: pwm2, minpwm: 70, maxpwm: 255 }
+  - cpu: { type: it8665, bind: pwm1, mode: dc, minpwm: 70, maxpwm: 255 }
+  - cha: { type: it8665, bind: pwm2, mode: pwm, minpwm: 70, maxpwm: 255 }
 
 # Controller binding
 # sensor: Sensor binding entry. Can be multiple, highest temperature will be used as reference
@@ -54,16 +54,20 @@ pwms:
 # temp - desired temperature setting
 # p - proportional coefficient
 # i - integral coefficient
-controller:
-  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },
+controllers:
+#  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },
+#      set: { temp_a: 40, temp_b: 75, off: true }
+#    }
+#  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
+#      set: { temp: 42, p: 10, i: 5 }
+#    }
+#  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
+#    set: {{ 40, 0 }, { 50, 50 }, { 60, 100 }, off: true }
+#  }
+   - cpu: { sensor: cpu, pwm: cha , mode: two_point, poll: 5,
       set: { temp_a: 40, temp_b: 75, off: true }
-    }
-  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
-      set: { temp: 42, p: 10, i: 5 }
-    }
-  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
-    set: { map: {{ 40, 0 }, { 50, 50 }, { 60, 100 }}, off: true }
-  }
+     }
+
 
 # Utility options (not implemented yet)
 daemon_conf:
