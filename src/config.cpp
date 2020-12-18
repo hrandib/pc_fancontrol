@@ -24,6 +24,20 @@
 #include <iostream>
 
 using std::cout, std::endl;
+using PollConf = ConfigEntry::PollConf;
+using SetMode = ConfigEntry::SetMode;
+using ModeConf = ConfigEntry::ModeConf;
+using StringVector = std::vector<std::string>;
+
+static inline std::string to_string(StringVector& vec) {
+    std::string result = "\'";
+    for(auto& el : vec) {
+        result += el;
+        result += " ";
+    }
+    *result.rbegin() = '\'';
+    return result;
+}
 
 struct SensorNode
 {
@@ -32,7 +46,8 @@ struct SensorNode
     std::string bind;
 };
 
-static void operator >>(const YAML::Node& node, SensorNode& sensNode) {
+static void operator >>(const YAML::Node& node, SensorNode& sensNode)
+{
     for(auto it = node.begin(); it != node.end(); ++it) {
         sensNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
@@ -56,7 +71,8 @@ struct PwmNode
     Pwm::Mode mode{Pwm::Mode::NoChange};
 };
 
-static void operator >>(const YAML::Node& node, PwmNode& pwmNode) {
+static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
+{
     for(auto it = node.begin(); it != node.end(); ++it) {
         pwmNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
@@ -94,39 +110,153 @@ static void operator >>(const YAML::Node& node, PwmNode& pwmNode) {
 
 struct ControllerNode
 {
-    using StringVector = std::vector<std::string>;
-
     std::string name;
     StringVector sensor;
     StringVector pwm;
-    ConfigEntry::SetMode mode;
-    ConfigEntry::PollConf pollConfig;
-    ConfigEntry::ModeConf modeConfig;
+    SetMode mode;
+    PollConf pollConfig;
+    ModeConf modeConfig;
+    bool autoOff;
 };
 
-static void operator >>(const YAML::Node& node, ControllerNode& controlllerNode) {
+static inline int parseTime(const YAML::Node& poll)
+{
+    auto stringValue = poll.as<std::string>();
+    int result;
+    try {
+        result = std::stoi(stringValue);
+    }
+    catch(std::exception&) {
+        throw std::invalid_argument("Error parsing poll time: " + stringValue);
+    }
+    if (stringValue.find("ms") == std::string::npos) {
+        //used field units - secs, convert to ms
+        result *= 1000;
+    }
+    return result;
+}
+
+static inline PollConf parsePollConfig(const YAML::Node& poll)
+{
+    PollConf result;
+    result.samplesCount = 1;
+    if(poll.IsScalar()) {
+        result.mode = PollConf::PollSimple;
+        result.timeMsecs = parseTime(poll);
+    }
+    else {
+        result.samplesCount = 1;
+        for(auto it = poll.begin(); it != poll.end(); ++it) {
+            auto key = it->first.as<std::string>();
+            if(key == "time") {
+                result.timeMsecs = parseTime(it->second);
+            }
+            else if(key == "ma_samples") {
+                result.samplesCount = it->second.as<int>();
+                result.mode = PollConf::PollMovingAverage;
+            }
+        }
+    }
+    return result;
+}
+
+static inline StringVector parseSensorsPwms(const YAML::Node& node)
+{
+    StringVector result;
+    if(node.IsMap()) {
+        for(auto it = node.begin(); it != node.end(); ++it) {
+            result.emplace_back(it->first.as<std::string>());
+        }
+    }
+    else {
+        result.push_back(node.as<std::string>());
+    }
+    return result;
+}
+
+static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
+{
+    ModeConf result;
+    switch(mode) {
+    case ConfigEntry::SETMODE_TWO_POINT: {
+        ConfigEntry::TwoPointConfMode confMode;
+        for(auto it = node.begin(); it != node.end(); ++it) {
+            auto key = it->first.as<std::string>();
+            if(key == "a") {
+                confMode.temp_a = it->second.as<int>();
+            }
+            else if(key == "b") {
+                confMode.temp_b = it->second.as<int>();
+            }
+            else {
+                throw std::invalid_argument("unrecognized attribute: " + key);
+            }
+        }
+        result = confMode;
+    }
+        break;
+    case ConfigEntry::SETMODE_MULTI_POINT: {
+        ConfigEntry::MultiPointConfMode confMode;
+        for(auto it = node.begin(); it != node.end(); ++it) {
+            auto key = it->first.begin()->first.as<int>();
+            auto val = it->first.begin()->second.as<int>();
+            confMode.pointVec.emplace_back(key, val);
+        }
+        result = confMode;
+    }
+        break;
+    case ConfigEntry::SETMODE_PI: {
+        ConfigEntry::PiConfMode confMode;
+        for(auto it = node.begin(); it != node.end(); ++it) {
+            auto key = it->first.as<std::string>();
+            if(key == "temp") {
+                confMode.temp = it->second.as<int>();
+            }
+            else if(key == "p") {
+                confMode.p = it->second.as<int>();
+            }
+            else if(key == "i") {
+                confMode.i = it->second.as<int>();
+            }
+            else {
+                throw std::invalid_argument("unrecognized attribute: " + key);
+            }
+        }
+        result = confMode;
+    }
+        break;
+
+    }
+    return result;
+}
+
+static void operator >>(const YAML::Node& node, ControllerNode& controllerNode) {
+
+    controllerNode.autoOff = false;
+    controllerNode.pollConfig.mode = PollConf::PollSimple;
+    controllerNode.pollConfig.samplesCount = 1;
+    controllerNode.pollConfig.timeMsecs = 1000;
+
     for(auto it = node.begin(); it != node.end(); ++it) {
-        controlllerNode.name = it->first.as<std::string>();
-        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
+        controllerNode.name = it->first.as<std::string>();
+        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
             auto key = it2->first.as<std::string>();
             if(key == "sensor") {
-                //TODO: array support
-                controlllerNode.sensor.push_back(it2->second.as<std::string>());
+                controllerNode.sensor = parseSensorsPwms(it2->second);
             }
             else if(key == "pwm") {
-                //TODO: array support
-                controlllerNode.pwm.push_back(it2->second.as<std::string>());
+                controllerNode.pwm = parseSensorsPwms(it2->second);
             }
             else if(key == "mode") {
                 auto rawMode = it2->second.as<std::string>();
                 if(rawMode == "two_point") {
-                    controlllerNode.mode = ConfigEntry::SETMODE_TWO_POINT;
+                    controllerNode.mode = ConfigEntry::SETMODE_TWO_POINT;
                 }
                 else if(rawMode == "multi_point") {
-                    controlllerNode.mode = ConfigEntry::SETMODE_MULTI_POINT;
+                    controllerNode.mode = ConfigEntry::SETMODE_MULTI_POINT;
                 }
                 else if(rawMode == "pi") {
-                    controlllerNode.mode = ConfigEntry::SETMODE_PI;
+                    controllerNode.mode = ConfigEntry::SETMODE_PI;
                 }
                 else {
                     cout << "Incompatible controller mode, entry will be skipped: "
@@ -135,22 +265,17 @@ static void operator >>(const YAML::Node& node, ControllerNode& controlllerNode)
                 }
             }
             else if(key == "poll") {
-                //TODO: moving average support
-                auto stringValue = it2->second.as<std::string>();
-                auto intValue = it2->second.as<int>();
-                if (stringValue.find("ms") == std::string::npos) {
-                    //used field units - secs, convert to ms
-                    intValue *= 1000;
-                }
-                controlllerNode.pollConfig.timeMsecs = intValue;
+                controllerNode.pollConfig = parsePollConfig(it2->second);
             }
             else if(key == "set") {
-                //controlllerNode.pwm.push_back(it2->second.as<std::string>());
+                controllerNode.modeConfig = parseModeConfig(controllerNode.mode, it2->second);
+            }
+            else if(key == "fan_stop") {
+                controllerNode.autoOff = it2->second.as<bool>();
             }
             else {
                 cout << "unknown attribute:" << key << "\n";
             }
-
         }
    }
 }
@@ -230,11 +355,37 @@ void Config::createControllers()
         ControllerNode node;
         controller >> node;
         cout << node.name << " "
-             << node.sensor[0] << " "
-             << node.pwm[0] << " "
+             << to_string(node.sensor) << " "
+             << to_string(node.pwm) << " "
              << static_cast<uint32_t>(node.mode) << " "
-             //<< node.pollConfig.mode << " "
+             << node.pollConfig.mode << " "
+             << node.pollConfig.samplesCount << " "
              << node.pollConfig.timeMsecs << "\n";
+        switch(node.mode) {
+        case SetMode::SETMODE_TWO_POINT:
+        {
+            ConfigEntry::TwoPointConfMode conf =
+                    std::get<SetMode::SETMODE_TWO_POINT>(node.modeConfig);
+            cout << conf.temp_a << " " << conf.temp_b << endl;
+        }
+            break;
+        case SetMode::SETMODE_MULTI_POINT:
+        {
+            ConfigEntry::MultiPointConfMode conf =
+                    std::get<SetMode::SETMODE_MULTI_POINT>(node.modeConfig);
+            for(auto& point : conf.pointVec) {
+                cout << point.first << "<>" << point.second << " ";
+            }
+            cout << endl;
+        }
+            break;
+        case ConfigEntry::SETMODE_PI:
+        {
+            ConfigEntry::PiConfMode conf = std::get<SetMode::SETMODE_PI>(node.modeConfig);
+            cout << conf.temp << "," << conf.p << "," << conf.i << endl;
+        }
+            break;
+        }
     }
     cout << endl;
 }

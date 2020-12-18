@@ -77,7 +77,7 @@ class Controller
             uint32_t normalizedValue = algo_->getSetpoint(temp);
             std::cout << normalizedValue << " pwm%\n";
             setAllPwms(normalizedValue);
-            std::this_thread::sleep_for(s(config_.GetPollConfig().timeMsecs));
+            std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
         }
     }
 
@@ -91,7 +91,7 @@ class Controller
     }
 
     void setAllPwms(uint32_t value) {
-        for(auto& pwm : config_.GetPwms()) {
+        for(auto& pwm : config_.getPwms()) {
             pwm->set(static_cast<uint_fast8_t>(value), name_);
         }
     }
@@ -99,12 +99,12 @@ class Controller
 public:
     Controller(string name, const ConfigEntry& conf) : name_{name}, config_{conf}
     {
-        switch(conf.GetMode()) {
+        switch(conf.getMode()) {
         case ConfigEntry::SETMODE_MULTI_POINT:
         case ConfigEntry::SETMODE_PI:
         case ConfigEntry::SETMODE_TWO_POINT:
             ConfigEntry::TwoPointConfMode mode
-                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(conf.GetModeConfig());
+                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(conf.getModeConfig());
             algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
             break;
         }

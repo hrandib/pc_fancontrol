@@ -37,37 +37,36 @@ pwms:
 # 1. time - sampling time in seconds, default value = 1s
 # 2. ma_samples - amount of samples for moving average sensor reading mode, disabled if not exist
 #
+# fan_stop: boolean option, if true, the fan will be completely stopped
+# if temperature is below lowest defined. Default value: false
+#
 # set: special options for selected control algorithm (mode)
-# 1. For 'two_point' contain min and max allowed temperature: temp_a, temp_b
+# 1. For 'two_point' contain min and max allowed temperature: 'a', 'b'
 # - min temperature maps to the 'minpwm' value
 # - max temperature maps to the 'maxpwm' value
-# - optionally can contain 'off' boolean option, if 'off' = true, the fan can be completely stopped
-# if temperature is below temp_a. Default value: false
 #
 # 2. For "multi_point' contain the points array, each point contain temperature and pwm value
 # pwm value is defined in percents between minpwm and maxpwm value, e.g
-# if minwm=100, maxpwm=200 the point {50, 30} will declare that at 50C
+# if minwm=100, maxpwm=200 the point {50: 30} will declare that at 50C
 # the raw pwm value should be 130
-# optionally also can have 'off' boolean option
 #
 # 3. For 'pi' contain:
 # temp - desired temperature setting
 # p - proportional coefficient
 # i - integral coefficient
 controllers:
-#  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 5s, ma_samples: 4 },
-#      set: { temp_a: 40, temp_b: 75, off: true }
-#    }
-#  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
-#      set: { temp: 42, p: 10, i: 5 }
-#    }
-#  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
-#    set: {{ 40, 0 }, { 50, 50 }, { 60, 100 }, off: true }
-#  }
-   - cpu: { sensor: cpu, pwm: cha , mode: two_point, poll: 5,
-      set: { temp_a: 40, temp_b: 75, off: true }
-     }
-
+  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 50ms, ma_samples: 4 },
+      set: { a: 40, b: 75 }, fan_stop: true
+    }
+  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
+      set: { temp: 42, p: 10, i: 5 }
+    }
+  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
+    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
+  }
+#   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
+#      set: { a: 40, b: 75, off: true }
+#     }
 
 # Utility options (not implemented yet)
 daemon_conf:

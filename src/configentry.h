@@ -38,16 +38,16 @@ public:
     };
 
     struct PiConfMode {
-        uint32_t temp, p, i;
+        int temp, p, i;
     };
 
     struct TwoPointConfMode {
-        uint32_t temp_a, temp_b;
+        int temp_a, temp_b;
     };
 
     struct MultiPointConfMode {
         //Temperature -> Pwm entry table
-        std::vector<std::pair<uint32_t, uint32_t>> pointVec;
+        std::vector<std::pair<int, int>> pointVec;
     };
 
     using ModeConf = std::variant<TwoPointConfMode, MultiPointConfMode, PiConfMode>;
@@ -71,31 +71,31 @@ private:
     bool autoOff_;
 public:
 
-    ConfigEntry& SetPiConfMode(uint32_t temp, uint32_t p, uint32_t i)
+    ConfigEntry& setModeConfig(ModeConf& modeConfig)
+    {
+        modeConf_ = modeConfig;
+        return *this;
+    }
+
+    ConfigEntry& setPiConfMode(int temp, int p, int i)
     {
         modeConf_ = PiConfMode{temp, p, i};
         return *this;
     }
 
-    ConfigEntry& SetTwoPointConfMode(uint32_t temp_a, uint32_t temp_b)
+    ConfigEntry& setTwoPointConfMode(int temp_a, int temp_b)
     {
         modeConf_ = TwoPointConfMode{temp_a, temp_b};
         return *this;
     }
 
-    ConfigEntry& SetMultiPointConfMode()
+    ConfigEntry& setMultiPointConfMode()
     {
         modeConf_ = MultiPointConfMode{};
         return *this;
     }
 
-    ConfigEntry& SetAutoOff(bool autoOff)
-    {
-        autoOff_ = autoOff;
-        return *this;
-    }
-
-    ConfigEntry& AddPoint(uint32_t temp, uint32_t pwm_percent) {
+    ConfigEntry& addPoint(int temp, int pwm_percent) {
         if(modeConf_.index() == SETMODE_MULTI_POINT) {
             std::get<SETMODE_MULTI_POINT>(modeConf_)
                     .pointVec
@@ -104,19 +104,19 @@ public:
         return *this;
     }
 
-    ConfigEntry& AddSensor(Sensor::ptr sensor)
+    ConfigEntry& addSensor(Sensor::ptr sensor)
     {
         sensors_.push_back(sensor);
         return *this;
     }
 
-    ConfigEntry& AddPwm(Pwm::ptr pwm)
+    ConfigEntry& addPwm(Pwm::ptr pwm)
     {
         pwms_.push_back(pwm);
         return *this;
     }
 
-    ConfigEntry& SetPollConfig(PollConf::PollMode mode, int pollTime, int samplesCount)
+    ConfigEntry& setPollConfig(PollConf::PollMode mode, int pollTime, int samplesCount)
     {
         pollConf_.mode = mode;
         pollConf_.timeMsecs = pollTime;
@@ -124,35 +124,40 @@ public:
         return *this;
     }
 
-    ConfigEntry& SetPollConfig(const PollConf& conf)
+    ConfigEntry& setPollConfig(const PollConf& conf)
     {
         pollConf_ = conf;
         return *this;
     }
 
-    ConfigEntry& SetPollConfig(int pollTime)
+    ConfigEntry& setPollConfig(int pollTime)
     {
         pollConf_.mode = PollConf::PollSimple;
         pollConf_.timeMsecs = pollTime;
         return *this;
     }
 
-    SetMode GetMode() const
+    ConfigEntry& setAutoOff(bool autoOff) {
+        autoOff_ = autoOff;
+        return *this;
+    }
+
+    SetMode getMode() const
     {
         return static_cast<SetMode>(modeConf_.index());
     }
 
-    const PollConf& GetPollConfig() const
+    const PollConf& getPollConfig() const
     {
         return pollConf_;
     }
 
-    const ModeConf& GetModeConfig() const
+    const ModeConf& getModeConfig() const
     {
         return modeConf_;
     }
 
-    const Pwms& GetPwms() const
+    const Pwms& getPwms() const
     {
         return pwms_;
     }

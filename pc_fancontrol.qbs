@@ -14,7 +14,7 @@ CppApplication { name: "fancontrol"
 
     consoleApplication: true
     cpp.optimization: undefined
-    cpp.debugInformation: false
+//    cpp.debugInformation: false
 
     cpp.cFlags: [
         "-std=c17"
@@ -23,7 +23,7 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-O3", "-Wall", "-Wextra"
+        "-Wall", "-Wextra"
     ]
 
     cpp.dynamicLibraries: [
