@@ -75,7 +75,7 @@ bool PwmImpl::set(int val, const string& sourceName)
     int rawValue{};
     if(val) {
         rawValue = static_cast<int>(minPwm_ + std::lround(multiplier * val));
-        std::cout << rawValue << std::endl;
+//        std::cout << rawValue << std::endl;
     }
     return write(static_cast<uint32_t>(rawValue));
 }

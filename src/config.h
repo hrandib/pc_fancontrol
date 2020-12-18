@@ -44,6 +44,7 @@ public:
     using Node = YAML::Node;
 
     Config(const std::string& configPath);
+    void run();
 private:
     Node rootNode_;
     HwmonMap hwmonMap_;

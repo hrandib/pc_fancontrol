@@ -22,9 +22,4 @@
 
 #include "controller.h"
 
-//Controller::Controller()
-//{
-
-//}
-
 std::atomic_bool Controller::breakExecution_;

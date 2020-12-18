@@ -292,6 +292,13 @@ Config::Config(const string& configPath)
     createControllers();
 }
 
+void Config::run()
+{
+    for(auto& c : controllers_) {
+        c.run();
+    }
+}
+
 void Config::createHwmons()
 {
     auto hwmonList = getNode("hwmon").as<std::vector<string>>();
@@ -314,6 +321,7 @@ void Config::createSensors()
         }
         else if (hwmonMap_.contains(node.type)){
             sensorMap_[node.name] = hwmonMap_[node.type].getSensor(node.bind);
+            sensorMap_[node.name]->open();
         }
         else {
             throw std::invalid_argument("Wrong sensor type: " + node.type);
@@ -340,6 +348,7 @@ void Config::createPwms()
             pwmObj->setMin(node.minpwm);
             pwmObj->setMax(node.maxpwm);
             pwmMap_[node.name] = pwmObj;
+            pwmObj->open();
         }
         else {
             throw std::invalid_argument("Wrong pwm type: " + node.type);
@@ -354,40 +363,28 @@ void Config::createControllers()
     for(const auto& controller : controllers) {
         ControllerNode node;
         controller >> node;
-        cout << node.name << " "
-             << to_string(node.sensor) << " "
-             << to_string(node.pwm) << " "
-             << static_cast<uint32_t>(node.mode) << " "
-             << node.pollConfig.mode << " "
-             << node.pollConfig.samplesCount << " "
-             << node.pollConfig.timeMsecs << "\n";
-        switch(node.mode) {
-        case SetMode::SETMODE_TWO_POINT:
-        {
-            ConfigEntry::TwoPointConfMode conf =
-                    std::get<SetMode::SETMODE_TWO_POINT>(node.modeConfig);
-            cout << conf.temp_a << " " << conf.temp_b << endl;
-        }
-            break;
-        case SetMode::SETMODE_MULTI_POINT:
-        {
-            ConfigEntry::MultiPointConfMode conf =
-                    std::get<SetMode::SETMODE_MULTI_POINT>(node.modeConfig);
-            for(auto& point : conf.pointVec) {
-                cout << point.first << "<>" << point.second << " ";
+        ConfigEntry configEntry{};
+        configEntry.setAutoOff(node.autoOff)
+                .setModeConfig(node.modeConfig)
+                .setPollConfig(node.pollConfig);
+        for(auto& pwm : node.pwm) {
+            if(pwmMap_.contains(pwm)) {
+                configEntry.addPwm(pwmMap_[pwm]);
             }
-            cout << endl;
+            else {
+                throw std::invalid_argument("Selected PWM is not defined: " + pwm);
+            }
         }
-            break;
-        case ConfigEntry::SETMODE_PI:
-        {
-            ConfigEntry::PiConfMode conf = std::get<SetMode::SETMODE_PI>(node.modeConfig);
-            cout << conf.temp << "," << conf.p << "," << conf.i << endl;
+        for(auto& sensor : node.sensor) {
+            if(sensorMap_.contains(sensor)) {
+                configEntry.addSensor(sensorMap_[sensor]);
+            }
+            else {
+                throw std::invalid_argument("Selected Sensor is not defined: " + sensor);
+            }
         }
-            break;
-        }
+        controllers_.emplace_back(node.name, configEntry);
     }
-    cout << endl;
 }
 
 YAML::Node Config::getNode(const string& nodeName) const

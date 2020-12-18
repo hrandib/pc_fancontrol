@@ -72,7 +72,7 @@ Sensor::ptr Hwmon::getSensor(sv sensorName)
         result = sensorCache_[sensor];
     }
     else {
-        Sensor::ptr result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
+        result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
         if(result->exists()) {
             sensorCache_[sensor] = result;
         }

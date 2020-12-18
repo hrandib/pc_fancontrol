@@ -31,7 +31,7 @@ pwms:
 # mode: control algorithm, possible values:
 # 1. two_point - simple 2 point curve transformation
 # 2. multi_point - arbitrary amount of approximation points (not implemented yet)
-# 3. pi - proporional-integral control algorithm (not implemented yet)
+# 3. pi - proportional-integral control algorithm (not implemented yet)
 #
 # poll: polling options, can contain:
 # 1. time - sampling time in seconds, default value = 1s
@@ -55,15 +55,15 @@ pwms:
 # p - proportional coefficient
 # i - integral coefficient
 controllers:
-  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 50ms, ma_samples: 4 },
-      set: { a: 40, b: 75 }, fan_stop: true
+  - cpu: { sensor: cpu, pwm: { cpu, cha }, mode: two_point, poll: { time: 1s, ma_samples: 8 },
+      set: { a: 45, b: 80 }, fan_stop: true
     }
-  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
-      set: { temp: 42, p: 10, i: 5 }
-    }
-  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
-    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
-  }
+#  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
+#      set: { temp: 42, p: 10, i: 5 }
+#    }
+#  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
+#    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
+#  }
 #   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
 #      set: { a: 40, b: 75, off: true }
 #     }

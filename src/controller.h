@@ -33,7 +33,7 @@
 #include <numeric>
 
 struct ControlAlgo {
-    virtual uint32_t getSetpoint(int32_t) = 0;
+    virtual int getSetpoint(int) = 0;
 };
 
 class AlgoTwoPoint : public ControlAlgo {
@@ -41,20 +41,40 @@ class AlgoTwoPoint : public ControlAlgo {
 public:
     AlgoTwoPoint(int32_t a, int32_t b) : a{a}, b{b}
     {  }
-    uint32_t getSetpoint(int32_t temp) override
+    int getSetpoint(int temp) override
     {
         static const double k = 100.0/(b - a);
-        int32_t norm_temp = temp - a;
+        int norm_temp = temp - a;
         if(temp >= b) {
             return 100;
         }
         else if(norm_temp > 0) {
-            return static_cast<uint32_t>(norm_temp * k);
+            return static_cast<int>(norm_temp * k);
         }
         else {
             return 1;
         }
     }
+};
+
+class MovingAverageBuf
+{
+private:
+  std::vector<int> buf_;
+  size_t index;
+public:
+  MovingAverageBuf(size_t bufSize) : buf_(bufSize), index{}
+  {  }
+  void operator=(int val)
+  {
+    buf_[index] = val;
+    index = (index + 1) % buf_.size();
+  }
+  operator int()
+  {
+    return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
+            / static_cast<int>(buf_.size());
+  }
 };
 
 class Controller
@@ -66,16 +86,17 @@ class Controller
     static std::atomic_bool breakExecution_;
 
     string name_;
-    const ConfigEntry& config_;
+    const ConfigEntry config_;
     std::unique_ptr<ControlAlgo> algo_;
     std::thread processingThread_;
-
+    MovingAverageBuf samples_;
     void handle() {
         while(!breakExecution_) {
-            int32_t temp = getHighestTemp();
-            std::cout << temp << " deg ";
-            uint32_t normalizedValue = algo_->getSetpoint(temp);
-            std::cout << normalizedValue << " pwm%\n";
+            int temp = getHighestTemp();
+            samples_ = temp;
+            std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
+            int normalizedValue = algo_->getSetpoint(samples_);
+            std::cout << normalizedValue << " % pwm\n";
             setAllPwms(normalizedValue);
             std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
         }
@@ -85,19 +106,20 @@ class Controller
         auto sensors = config_.getSensors();
         auto highest = std::max_element(sensors.cbegin(), sensors.cend(),
                                         [](auto& sensor_a, auto& sensor_b) {
-            return sensor_a > sensor_b;
+            return sensor_a->get() > sensor_b->get();
         });
         return (*highest)->get();
     }
 
-    void setAllPwms(uint32_t value) {
+    void setAllPwms(int value) {
         for(auto& pwm : config_.getPwms()) {
-            pwm->set(static_cast<uint_fast8_t>(value), name_);
+            pwm->set(value, name_);
         }
     }
 
 public:
-    Controller(string name, const ConfigEntry& conf) : name_{name}, config_{conf}
+    Controller(string name, const ConfigEntry& conf) : name_{name}, config_{std::move(conf)},
+        samples_(static_cast<size_t>(conf.getPollConfig().samplesCount))
     {
         switch(conf.getMode()) {
         case ConfigEntry::SETMODE_MULTI_POINT:
@@ -109,6 +131,8 @@ public:
             break;
         }
     }
+
+    Controller(Controller&&) = default;
 
     void run() {
         processingThread_ = std::thread{&Controller::handle, this};
