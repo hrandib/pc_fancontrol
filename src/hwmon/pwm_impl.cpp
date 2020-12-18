@@ -70,12 +70,14 @@ bool PwmImpl::open()
 
 bool PwmImpl::set(int val, const string& sourceName)
 {
-    static const auto multiplier = (maxPwm_ - minPwm_)/100.0;
     val = selectMaxValue(val, sourceName);
     int rawValue{};
-    if(val) {
+    if(val == -1) {
+        rawValue = 0;
+    }
+    else {
+        auto multiplier = (maxPwm_ - minPwm_)/100.0;
         rawValue = static_cast<int>(minPwm_ + std::lround(multiplier * val));
-//        std::cout << rawValue << std::endl;
     }
     return write(static_cast<uint32_t>(rawValue));
 }

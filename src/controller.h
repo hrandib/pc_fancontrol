@@ -47,12 +47,11 @@ public:
         int norm_temp = temp - a;
         if(temp >= b) {
             return 100;
-        }
-        else if(norm_temp > 0) {
-            return static_cast<int>(norm_temp * k);
+        } else if(norm_temp <= 0) {
+            return 0;
         }
         else {
-            return 1;
+            return static_cast<int>(norm_temp * k);
         }
     }
 };
