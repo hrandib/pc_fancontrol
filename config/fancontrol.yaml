@@ -1,38 +1,47 @@
 ---
+#sample configuration file
 
-# /sys/class/hwmon node, uses the 'name' file content for binding
+# /sys/class/hwmon node declarations, uses the 'name' file content (/sys/class/hwmonX/name)
+# to determine proper hwmon path for binding as hwmonX are not persistent
 hwmon:
- - it8665
- - k10temp
- - amdgpu
+# - it8665
+# - k10temp
+# - amdgpu
 
 # Sensor binding
 # Sensor types:
-# 1. hwmon node, 'type' points to hwmon entry, 'bind' points to the file name which should be read
-# 2. shell_cmd type, uses shell command to retrieve sensor data
+# 1. hwmon node. Contain attributes:
+#   type - points to the hwmon entry declared in the above section
+#   bind - points to the file name which should be read, e.g. 'temp1' will represent
+#     /sys/class/hwmonX/temp1_input
+# 2. shell_cmd, uses shell command to retrieve sensor data, the command output format should be
+# an integer value of temperature in degree units.
 sensors:
-  - cpu: { type: it8665, bind: temp1 }
+#  - cpu: { type: it8665, bind: temp1 }
 #  - mb: { type: it8665, bind: temp2 }
 #  - wd12: { type: shell_cmd, bind: "hddtemp /dev/sdd | tail -c 6 | head -c -4" }
-#  - wd8: { type: shell_cmd, bind: "ssh serv.loc hddtemp /dev/sdc | tail -c 6 | head -c -4" }
-#  - sample: { type: shell_cmd, bind: "hddtemp /dev/sdc | tail -c 6 | head -c -4" }
-
+#  - wd8: { type: shell_cmd, bind: "hddtemp /dev/sdc | tail -c 6 | head -c -4" }
 
 # PWM channel binding
 # type: hwmon node entry, defined in 'hwmon' section
-# mode: 'dc' - DC mode channel mode, 'pwm' - PWM channel mode
-# bind: points to the file name which will be used for control
-# minpwm, maxpwm: allowed values range, corresponds to the range of used fan
+# bind: points to the file name which will be used for control, e.g. 'pwm1' will represent
+#   /sys/class/hwmonX/pwm1
+# mode: 'dc' - DC channel mode, 'pwm' - PWM channel mode, default - no change
+# minpwm, maxpwm: allowed PWM range, corresponds to the range of used fan,
+#   could be found experimentally
 # fan_stop: boolean option, if true, the fan will be completely stopped
-# if temperature is below lowest defined. Default value: false
+#   if temperature is below lowest defined. Default value: false
 pwms:
-  - cpu_main: { type: it8665, bind: pwm1, mode: dc, minpwm: 110, maxpwm: 255 }
-  - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 230 }
-  - cha: { type: it8665, bind: pwm2, mode: dc, minpwm: 90, maxpwm: 255 }
+#  - cpu_main: { type: it8665, bind: pwm1, mode: dc, minpwm: 110, maxpwm: 255 }
+#  - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 230 }
+#  - cha: { type: it8665, bind: pwm2, mode: dc, minpwm: 90, maxpwm: 255, fan_stop: true }
 
 # Controller binding
+# Links sensor declarations to pwm declarations with defined control algorithm
+# Can link multiple sensors to the multiple pwms.
 # sensor: Sensor binding entry. Can be multiple, highest temperature will be used as reference
-# pwm: PWM channel binding entry. Can be multiple
+# pwm: PWM channel binding entry. Can be multiple, each pwm will be controlled according to the
+#   allowed PWM range
 # mode: control algorithm, possible values:
 # 1. two_point - simple 2 point curve transformation
 # 2. multi_point - arbitrary amount of approximation points
@@ -71,11 +80,7 @@ controllers:
 #   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
 #      set: { a: 40, b: 75, off: true }
 #     }
-   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
-      poll: { time: 1s, ma_samples: 8 },
-      set: {{ 40 : 0 }, { 55 : 20 }, { 78 : 100 }}
-    }
-
-# Utility options (not implemented yet)
-daemon_conf:
-  - mqtt_telemetry: { enable: false, broker: localhost, port: 1883, topic: serv_fanctrl }
+#   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
+#      poll: { time: 1s, ma_samples: 8 },
+#      set: {{ 40 : 0 }, { 55 : 20 }, { 78 : 100 }}
+#    }
