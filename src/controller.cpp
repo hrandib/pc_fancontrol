@@ -31,8 +31,8 @@ void Controller::handle() {
         auto setpoint = algo_->getSetpoint(samples_);
         if (temp != previousDegreeValue_ && setpoint > -1) {
             previousDegreeValue_ = temp;
-            std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
-            std::cout << setpoint << " % pwm\n";
+            std::cout << name_ << " Peak: " << temp << " Mean: " << round(samples_ * 10)/10
+                      << " | " << round(setpoint * 10)/10 << "% pwm" << std::endl;
         }
         setAllPwms(setpoint);
         std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
