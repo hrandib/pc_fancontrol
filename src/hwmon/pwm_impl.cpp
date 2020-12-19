@@ -26,7 +26,8 @@
 
 PwmImpl::PwmImpl(const fs::path& pwmPath,
                  int min, int max, Mode mode)
-    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}
+    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode},
+      previousRawValue_{}
 {
     enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
@@ -79,7 +80,11 @@ bool PwmImpl::set(double val, const string& sourceName)
         auto multiplier = (maxPwm_ - minPwm_)/100.0;
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
     }
-    return write(rawValue);
+    if (rawValue != previousRawValue_) {
+        previousRawValue_ = rawValue;
+        return write(rawValue);
+    }
+    return true;
 }
 
 void PwmImpl::reset()

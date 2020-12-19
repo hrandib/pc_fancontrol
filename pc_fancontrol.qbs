@@ -14,7 +14,6 @@ CppApplication { name: "fancontrol"
 
     consoleApplication: true
     cpp.optimization: undefined
-//    cpp.debugInformation: false
 
     cpp.cFlags: [
         "-std=c17"

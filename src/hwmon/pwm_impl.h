@@ -45,6 +45,7 @@ private:
     fs::path enablePath_, modePath_;
     int minPwm_, maxPwm_;
     Mode mode_;
+    uint32_t previousRawValue_;
 
     bool setControl(Control control);
     bool activateMode(Mode mode);
