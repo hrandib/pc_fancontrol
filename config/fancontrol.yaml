@@ -23,7 +23,7 @@ sensors:
 # minpwm, maxpwm: allowed values range, corresponds to the range of used fan
 pwms:
   - cpu_main: { type: it8665, bind: pwm1, mode: dc, minpwm: 110, maxpwm: 255 }
-  - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 220 }
+  - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 230 }
   - cha: { type: it8665, bind: pwm2, mode: dc, minpwm: 90, maxpwm: 255 }
 
 # Controller binding
@@ -31,7 +31,7 @@ pwms:
 # pwm: PWM channel binding entry. Can be multiple
 # mode: control algorithm, possible values:
 # 1. two_point - simple 2 point curve transformation
-# 2. multi_point - arbitrary amount of approximation points (not implemented yet)
+# 2. multi_point - arbitrary amount of approximation points
 # 3. pi - proportional-integral control algorithm (not implemented yet)
 #
 # poll: polling options, can contain:
@@ -42,23 +42,24 @@ pwms:
 # if temperature is below lowest defined. Default value: false
 #
 # set: special options for selected control algorithm (mode)
-# 1. For 'two_point' contain min and max allowed temperature: 'a', 'b'
+# 1. For 'two_point' it contains min and max allowed temperature: 'a', 'b'
 # - min temperature maps to the 'minpwm' value
 # - max temperature maps to the 'maxpwm' value
 #
-# 2. For "multi_point' contain the points array, each point contain temperature and pwm value
+# 2. For "multi_point' it contains the points array (arbitrary amount of points),
+# each point contain temperature and pwm value mapping,
 # pwm value is defined in percents between minpwm and maxpwm value, e.g
 # if minwm=100, maxpwm=200 the point {50: 30} will declare that at 50C
 # the raw pwm value should be 130
 #
-# 3. For 'pi' contain:
+# 3. For 'pi' it contains:
 # temp - desired temperature setting
 # p - proportional coefficient
 # i - integral coefficient
 controllers:
-  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
-      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
-    }
+#  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
+#      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
+#    }
 #  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
 #      set: { temp: 42, p: 10, i: 5 }
 #    }
@@ -68,6 +69,10 @@ controllers:
 #   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
 #      set: { a: 40, b: 75, off: true }
 #     }
+   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
+      poll: { time: 1s, ma_samples: 8 },
+      set: {{ 40 : 0 }, { 55 : 20 }, { 75 : 100 }}
+    }
 
 # Utility options (not implemented yet)
 daemon_conf:

@@ -41,7 +41,7 @@ private:
     static inline constexpr sv ENABLE_SUFFIX = "_enable";
     static inline constexpr sv MODE_SUFFIX = "_mode";
 
-    std::map<string, int> valueCache_;
+    std::map<string, double> valueCache_;
     fs::path enablePath_, modePath_;
     int minPwm_, maxPwm_;
     Mode mode_;
@@ -49,14 +49,14 @@ private:
     bool setControl(Control control);
     bool activateMode(Mode mode);
 
-    int selectMaxValue(int val, const string& sourceName);
+    double selectMaxValue(double val, const string& sourceName);
 public:
     PwmImpl(const fs::path& pwmPath, int min, int max,
             Mode mode = Mode::NoChange);
     PwmImpl(const fs::path& pwmPath);
 
     bool open() override;
-    bool set(int val, const string& sourceName) override;
+    bool set(double val, const string& sourceName) override;
     void reset() override;
 
     void setMin(int val) override

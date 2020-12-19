@@ -37,6 +37,8 @@ public:
         SETMODE_PI
     };
 
+    using PointVec = std::vector<std::pair<int, int>>;
+
     struct PiConfMode {
         int temp, p, i;
     };
@@ -47,7 +49,7 @@ public:
 
     struct MultiPointConfMode {
         //Temperature -> Pwm entry table
-        std::vector<std::pair<int, int>> pointVec;
+        PointVec pointVec;
     };
 
     using ModeConf = std::variant<TwoPointConfMode, MultiPointConfMode, PiConfMode>;

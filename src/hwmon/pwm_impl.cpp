@@ -50,7 +50,7 @@ bool PwmImpl::activateMode(Mode mode)
     return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
 }
 
-int PwmImpl::selectMaxValue(int val, const string& sourceName)
+double PwmImpl::selectMaxValue(double val, const string& sourceName)
 {
     valueCache_[sourceName] = val;
     auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
@@ -68,18 +68,19 @@ bool PwmImpl::open()
     return setControl(Control::Manual) && SysfsWriterImpl::open();
 }
 
-bool PwmImpl::set(int val, const string& sourceName)
+bool PwmImpl::set(double val, const string& sourceName)
 {
     val = selectMaxValue(val, sourceName);
-    int rawValue{};
-    if(val == -1) {
+    uint32_t rawValue{};
+    if(val <= -1) {
         rawValue = 0;
     }
     else {
         auto multiplier = (maxPwm_ - minPwm_)/100.0;
-        rawValue = static_cast<int>(minPwm_ + std::lround(multiplier * val));
+        rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
+//        std::cout << "PWM raw: " << rawValue << std::endl;
     }
-    return write(static_cast<uint32_t>(rawValue));
+    return write(rawValue);
 }
 
 void PwmImpl::reset()

@@ -31,28 +31,65 @@
 #include <chrono>
 #include <iostream>
 #include <numeric>
+#include <cmath>
 
 struct ControlAlgo {
-    virtual int getSetpoint(int) = 0;
+    virtual double getSetpoint(double) = 0;
 };
 
 class AlgoTwoPoint : public ControlAlgo {
-    int32_t a, b;
+    double a, b;
 public:
-    AlgoTwoPoint(int32_t a, int32_t b) : a{a}, b{b}
+    AlgoTwoPoint(int a, int b) : a{static_cast<double>(a)}, b{static_cast<double>(b)}
     {  }
-    int getSetpoint(int temp) override
+    double getSetpoint(double temp) override
     {
         static const double k = 100.0/(b - a);
-        int norm_temp = temp - a;
+        double norm_temp = temp - a;
         if(temp >= b) {
             return 100;
         } else if(norm_temp <= 0) {
             return 0;
         }
         else {
-            return static_cast<int>(norm_temp * k);
+            return norm_temp * k;
         }
+    }
+};
+
+class AlgoMultiPoint : public ControlAlgo {
+    const ConfigEntry::PointVec points_;
+public:
+    AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
+    {  }
+    double getSetpoint(double temp) override
+    {
+        double result{};
+        auto* begin = &points_[0];
+        for(size_t i = 1; i < points_.size(); ++i) {
+            if(begin->first >= temp) {
+                result = begin->second;
+                std::cout << "1: " << result << std::endl;
+                break;
+            }
+            auto* end = &points_[i];
+            if(end->first >= temp) {
+                auto degDiff = double(end->first - begin->first);
+                auto pwmDiff = double(end->second - begin->second);
+                auto multiplier = pwmDiff/degDiff;
+                result = begin->second + ((temp - begin->first) * multiplier);
+                std::cout << "\nbegin_deg: " << begin->first << " end_deg: " << end->first << std::endl;
+                std::cout << "begin_pwm: " << begin->second << " end_pwm: " << end->second << std::endl;
+                std::cout << "2: " << result << " " << multiplier << std::endl;
+                break;
+            }
+            else if(end == &*points_.rbegin()) {
+                result = end->second;
+                std::cout << "3: " << result << std::endl;
+            }
+            begin = end;
+        }
+        return result;
     }
 };
 
@@ -69,10 +106,10 @@ public:
     buf_[index] = val;
     index = (index + 1) % buf_.size();
   }
-  operator int()
+  operator double()
   {
     return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
-            / static_cast<int>(buf_.size());
+            / static_cast<double>(buf_.size());
   }
 };
 
@@ -94,9 +131,9 @@ class Controller
             int temp = getHighestTemp();
             samples_ = temp;
             std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
-            int normalizedValue = algo_->getSetpoint(samples_);
-            std::cout << normalizedValue << " % pwm\n";
-            setAllPwms(normalizedValue);
+            auto setpoint = algo_->getSetpoint(samples_);
+            std::cout << setpoint << " % pwm\n";
+            setAllPwms(setpoint);
             std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
         }
     }
@@ -110,7 +147,7 @@ class Controller
         return (*highest)->get();
     }
 
-    void setAllPwms(int value) {
+    void setAllPwms(double value) {
         for(auto& pwm : config_.getPwms()) {
             pwm->set(value, name_);
         }
@@ -121,12 +158,19 @@ public:
         samples_(static_cast<size_t>(conf.getPollConfig().samplesCount))
     {
         switch(conf.getMode()) {
-        case ConfigEntry::SETMODE_MULTI_POINT:
-        case ConfigEntry::SETMODE_PI:
-        case ConfigEntry::SETMODE_TWO_POINT:
+        case ConfigEntry::SETMODE_TWO_POINT: {
             ConfigEntry::TwoPointConfMode mode
-                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(conf.getModeConfig());
+                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(config_.getModeConfig());
             algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
+        }
+            break;
+        case ConfigEntry::SETMODE_MULTI_POINT: {
+            ConfigEntry::MultiPointConfMode mode
+                    = std::get<ConfigEntry::SETMODE_MULTI_POINT>(config_.getModeConfig());
+            algo_ = std::make_unique<AlgoMultiPoint>(mode.pointVec);
+        }
+            break;
+        case ConfigEntry::SETMODE_PI:
             break;
         }
     }
@@ -139,7 +183,7 @@ public:
 
     ~Controller() {
         processingThread_.join();
-        std::cout << "Controller " << name_ << " finished\n";
+        std::cout << "\'" << name_<< "\' controller finished\n";
     }
 
     static void stop() {
