@@ -26,97 +26,13 @@
 #include "interface/pwm.h"
 #include "interface/sensor.h"
 #include "configentry.h"
+#include "common/algorithms.h"
 
 #include <thread>
 #include <chrono>
 #include <iostream>
 #include <numeric>
 #include <cmath>
-
-struct ControlAlgo {
-    virtual double getSetpoint(double) = 0;
-};
-
-class AlgoTwoPoint : public ControlAlgo {
-    double a_, b_;
-public:
-    AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
-    {  }
-    double getSetpoint(double temp) override
-    {
-        static const double k = 100.0/(b_ - a_);
-        double norm_temp = temp - a_;
-        if(temp >= b_) {
-            return 100;
-        } else if(norm_temp < 0) {
-            return -1;
-        }
-        else {
-            return norm_temp * k;
-        }
-    }
-};
-
-class AlgoMultiPoint : public ControlAlgo {
-    const ConfigEntry::PointVec points_;
-public:
-    AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
-    {  }
-    double getSetpoint(double temp) override
-    {
-        double result{};
-        auto* begin = &points_[0];
-        for(size_t i = 1; i < points_.size(); ++i) {
-            if(begin->first > temp) {
-                result = -1;
-                std::cout << "1: " << result << std::endl;
-                break;
-            }
-            auto* end = &points_[i];
-            if(end->first > temp) {
-                auto degDiff = double(end->first - begin->first);
-                auto pwmDiff = double(end->second - begin->second);
-                auto multiplier = pwmDiff/degDiff;
-                result = begin->second + ((temp - begin->first) * multiplier);
-                std::cout << "\nbegin_deg: " << begin->first << " end_deg: " << end->first << std::endl;
-                std::cout << "begin_pwm: " << begin->second << " end_pwm: " << end->second << std::endl;
-                std::cout << "2: " << result << " " << multiplier << std::endl;
-                break;
-            }
-            else if(end == &*points_.rbegin()) {
-                result = end->second;
-                std::cout << "3: " << result << std::endl;
-            }
-            begin = end;
-        }
-        return result;
-    }
-};
-
-class AlgoPI : public ControlAlgo {
-    const double t_, kp_, ki_;
-    double integralErr_;
-public:
-    AlgoPI(double t, double kp, double ki) : t_{t}, kp_{kp}, ki_{ki}, integralErr_{}
-    {  }
-
-    double getSetpoint(double temp) override
-    {
-        double pe = kp_ * (temp - t_);
-        integralErr_ += ki_ * (temp - t_);
-        if(integralErr_ > 50) {
-            integralErr_ = 50;
-        } else if (integralErr_ < 0) {
-            integralErr_ = 0;
-        }
-        double result = pe + integralErr_;
-        std::cout << "pe: " << pe << " ie: " << integralErr_ << " result: " << result << std::endl;
-        if(result > 100) {
-            result = 100;
-        }
-        return result;
-    }
-};
 
 class MovingAverageBuf
 {
@@ -152,58 +68,15 @@ class Controller
     std::unique_ptr<ControlAlgo> algo_;
     std::thread processingThread_;
     MovingAverageBuf samples_;
-    void handle() {
-        while(!breakExecution_) {
-            int temp = getHighestTemp();
-            samples_ = temp;
-            std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
-            auto setpoint = algo_->getSetpoint(samples_);
-            std::cout << setpoint << " % pwm\n";
-            setAllPwms(setpoint);
-            std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
-        }
-    }
 
-    int32_t getHighestTemp() {
-        auto sensors = config_.getSensors();
-        auto highest = std::max_element(sensors.cbegin(), sensors.cend(),
-                                        [](auto& sensor_a, auto& sensor_b) {
-            return sensor_a->get() > sensor_b->get();
-        });
-        return (*highest)->get();
-    }
+    void handle();
 
-    void setAllPwms(double value) {
-        for(auto& pwm : config_.getPwms()) {
-            pwm->set(value, name_);
-        }
-    }
+    int32_t getHighestTemp();
+
+    void setAllPwms(double value);
 
 public:
-    Controller(string name, const ConfigEntry& conf) : name_{name}, config_{std::move(conf)},
-        samples_(static_cast<size_t>(conf.getPollConfig().samplesCount))
-    {
-        switch(conf.getMode()) {
-        case ConfigEntry::SETMODE_TWO_POINT: {
-            ConfigEntry::TwoPointConfMode mode
-                    = std::get<ConfigEntry::SETMODE_TWO_POINT>(config_.getModeConfig());
-            algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
-        }
-            break;
-        case ConfigEntry::SETMODE_MULTI_POINT: {
-            ConfigEntry::MultiPointConfMode mode
-                    = std::get<ConfigEntry::SETMODE_MULTI_POINT>(config_.getModeConfig());
-            algo_ = std::make_unique<AlgoMultiPoint>(mode.pointVec);
-        }
-            break;
-        case ConfigEntry::SETMODE_PI: {
-            ConfigEntry::PiConfMode mode
-                    = std::get<ConfigEntry::SETMODE_PI>(config_.getModeConfig());
-            algo_ = std::make_unique<AlgoPI>(mode.temp, mode.kp, mode.ki);
-        }
-            break;
-        }
-    }
+    Controller(string name, const ConfigEntry& conf);
 
     Controller(Controller&&) = default;
 

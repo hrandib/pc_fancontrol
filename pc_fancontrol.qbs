@@ -23,7 +23,7 @@ CppApplication { name: "fancontrol"
         "-std=c++2a"
     ]
     cpp.commonCompilerFlags: [
-        "-Wall", "-Wextra"
+        "-O3", "-Wall", "-Wextra"
     ]
 
     cpp.dynamicLibraries: [

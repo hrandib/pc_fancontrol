@@ -10,7 +10,7 @@ void sigintHandler(int) {
 
 int main(int /* argc */, const char** /* argv[] */) {
     signal(SIGINT, sigintHandler);
-    Config config{"/home/dmytro/Projects/pc_fancontrol/config/fancontrol.yaml"};
+    Config config{"/etc/fancontrol.yaml"};
     config.run();
 }
 

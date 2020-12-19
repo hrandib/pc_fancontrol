@@ -14,7 +14,9 @@ Product { name: "src"
             condition: parent.name != "tests"
             prefix: "common/"
             files: [
-                "constants.h"
+                "constants.h",
+                "algorithms.h",
+                "algorithms.cpp",
             ]
             cpp.includePaths: outer.concat(FileInfo.joinPaths(product.sourceDirectory, "common"))
         }

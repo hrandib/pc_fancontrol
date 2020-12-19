@@ -19,46 +19,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef SHELLSENSOR_H
-#define SHELLSENSOR_H
 
-#include "interface/sensor.h"
-#include <atomic>
-#include <chrono>
-#include <string_view>
-#include <filesystem>
+#ifndef ALGO_H
+#define ALGO_H
 
+#include "configentry.h"
 
-class ShellSensor : public Sensor
-{
-private:
-    static inline constexpr std::chrono::milliseconds READ_PERIOD{500};
-
-    std::string executablePath;
-    std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};
-    std::atomic_int cachedVal_;
-public:
-    ShellSensor(const std::string& executablePath);
-
-    bool open() override {
-        return true;
-    }
-
-    int32_t get() override;
-
-    bool exists() override {
-        return true;
-    }
-private:
-    static inline int exec(const char* cmd);
+struct ControlAlgo {
+    virtual double getSetpoint(double) = 0;
+    virtual ~ControlAlgo();
 };
 
-template<typename T>
-inline Sensor::ptr make_sensor(const std::string&);
+class AlgoTwoPoint : public ControlAlgo {
+    double a_, b_;
+public:
+    AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
+    {  }
+    double getSetpoint(double temp) override;
+};
 
-template<>
-inline Sensor::ptr make_sensor<ShellSensor>(const std::string& path) {
-    return std::make_shared<ShellSensor>(path);
-}
+class AlgoMultiPoint : public ControlAlgo {
+    const ConfigEntry::PointVec points_;
+public:
+    AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
+    {  }
+    double getSetpoint(double temp) override;
+};
 
-#endif // SHELLSENSOR_H
+class AlgoPI : public ControlAlgo {
+    const double t_, kp_, ki_;
+    double integralErr_;
+public:
+    AlgoPI(double t, double kp, double ki) : t_{t}, kp_{kp}, ki_{ki}, integralErr_{}
+    {  }
+    double getSetpoint(double temp) override;
+};
+
+
+#endif // ALGO_H

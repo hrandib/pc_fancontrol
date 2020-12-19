@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "shell/sensor_impl.h"
 
 ShellSensor::ShellSensor(const std::string& path) : executablePath{path}

@@ -377,14 +377,17 @@ void Config::createControllers()
                 throw std::invalid_argument("Selected PWM is not defined: " + pwm);
             }
         }
+        cout << "Add sensors: ";
         for(auto& sensor : node.sensor) {
             if(sensorMap_.contains(sensor)) {
+                cout << sensor << " ";
                 configEntry.addSensor(sensorMap_[sensor]);
             }
             else {
                 throw std::invalid_argument("Selected Sensor is not defined: " + sensor);
             }
         }
+        cout << endl;
         controllers_.emplace_back(node.name, configEntry);
     }
 }
