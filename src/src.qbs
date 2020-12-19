@@ -41,6 +41,14 @@ Product { name: "src"
             ]
         }
 
+        Group { name: "shell"
+            prefix: "shell/"
+            files: [
+                "sensor_impl.cpp",
+                "sensor_impl.h",
+            ]
+        }
+
         Group { name: "sysfs"
             prefix: "sysfs/"
             files: [

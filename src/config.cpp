@@ -21,6 +21,8 @@
  */
 
 #include "config.h"
+#include "shell/sensor_impl.h"
+
 #include <iostream>
 
 using std::cout, std::endl;
@@ -317,7 +319,7 @@ void Config::createSensors()
         sensor >> node;
         cout << node.name << " " << node.type << " " << node.bind << "\n";
         if (node.type == "shell_cmd") {
-            //TODO: implement
+            sensorMap_[node.name] = make_sensor<ShellSensor>(node.bind);
         }
         else if (hwmonMap_.contains(node.type)){
             sensorMap_[node.name] = hwmonMap_[node.type].getSensor(node.bind);

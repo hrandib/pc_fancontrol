@@ -15,6 +15,8 @@ sensors:
 #  - mb: { type: it8665, bind: temp2 }
 #  - wd12: { type: shell_cmd, bind: "hddtemp /dev/sdd | tail -c 6 | head -c -4" }
 #  - wd8: { type: shell_cmd, bind: "hddtemp /dev/sdc | tail -c 6 | head -c -4" }
+  - sample: { type: shell_cmd, bind: "echo 60" }
+
 
 # PWM channel binding
 # type: hwmon node entry, defined in 'hwmon' section
@@ -60,8 +62,8 @@ controllers:
 #  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
 #      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
 #    }
-  - cha1: { sensor: cpu, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
-      set: { t: 50, kp: 5, ki: 0.1 }
+  - cha1: { sensor: sample, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
+      set: { t: 50, kp: 2, ki: 0.1 }
     }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
 #    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
