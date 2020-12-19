@@ -1,5 +1,5 @@
 ---
-#sample configuration file
+#sample configuration file, should be located at /etc/fancontrol.yaml
 
 # /sys/class/hwmon node declarations, uses the 'name' file content (/sys/class/hwmonX/name)
 # to determine proper hwmon path for binding as hwmonX are not persistent
