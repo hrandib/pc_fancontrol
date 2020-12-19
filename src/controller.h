@@ -68,6 +68,7 @@ class Controller
     std::unique_ptr<ControlAlgo> algo_;
     std::thread processingThread_;
     MovingAverageBuf samples_;
+    int previousDegreeValue_;
 
     void handle();
 

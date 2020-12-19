@@ -28,9 +28,12 @@ void Controller::handle() {
     while(!breakExecution_) {
         int temp = getHighestTemp();
         samples_ = temp;
-        std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
         auto setpoint = algo_->getSetpoint(samples_);
-        std::cout << setpoint << " % pwm\n";
+        if (temp != previousDegreeValue_ && setpoint > -1) {
+            previousDegreeValue_ = temp;
+            std::cout << "Peak deg: " << temp << " ma deg: " << samples_ << " ";
+            std::cout << setpoint << " % pwm\n";
+        }
         setAllPwms(setpoint);
         std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
     }
@@ -52,7 +55,7 @@ void Controller::setAllPwms(double value) {
 }
 
 Controller::Controller(Controller::string name, const ConfigEntry& conf) : name_{name}, config_{std::move(conf)},
-    samples_(static_cast<size_t>(conf.getPollConfig().samplesCount))
+    samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)), previousDegreeValue_{}
 {
     switch(conf.getMode()) {
     case ConfigEntry::SETMODE_TWO_POINT: {
