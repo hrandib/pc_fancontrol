@@ -38,18 +38,18 @@ struct ControlAlgo {
 };
 
 class AlgoTwoPoint : public ControlAlgo {
-    double a, b;
+    double a_, b_;
 public:
-    AlgoTwoPoint(int a, int b) : a{static_cast<double>(a)}, b{static_cast<double>(b)}
+    AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
     {  }
     double getSetpoint(double temp) override
     {
-        static const double k = 100.0/(b - a);
-        double norm_temp = temp - a;
-        if(temp >= b) {
+        static const double k = 100.0/(b_ - a_);
+        double norm_temp = temp - a_;
+        if(temp >= b_) {
             return 100;
-        } else if(norm_temp <= 0) {
-            return 0;
+        } else if(norm_temp < 0) {
+            return -1;
         }
         else {
             return norm_temp * k;
@@ -67,13 +67,13 @@ public:
         double result{};
         auto* begin = &points_[0];
         for(size_t i = 1; i < points_.size(); ++i) {
-            if(begin->first >= temp) {
-                result = begin->second;
+            if(begin->first > temp) {
+                result = -1;
                 std::cout << "1: " << result << std::endl;
                 break;
             }
             auto* end = &points_[i];
-            if(end->first >= temp) {
+            if(end->first > temp) {
                 auto degDiff = double(end->first - begin->first);
                 auto pwmDiff = double(end->second - begin->second);
                 auto multiplier = pwmDiff/degDiff;
@@ -93,24 +93,50 @@ public:
     }
 };
 
+class AlgoPI : public ControlAlgo {
+    const double t_, kp_, ki_;
+    double integralErr_;
+public:
+    AlgoPI(double t, double kp, double ki) : t_{t}, kp_{kp}, ki_{ki}, integralErr_{}
+    {  }
+
+    double getSetpoint(double temp) override
+    {
+        double pe = kp_ * (temp - t_);
+        integralErr_ += ki_ * (temp - t_);
+        if(integralErr_ > 50) {
+            integralErr_ = 50;
+        } else if (integralErr_ < 0) {
+            integralErr_ = 0;
+        }
+        double result = pe + integralErr_;
+        std::cout << "pe: " << pe << " ie: " << integralErr_ << " result: " << result << std::endl;
+        if(result > 100) {
+            result = 100;
+        }
+        return result;
+    }
+};
+
 class MovingAverageBuf
 {
 private:
-  std::vector<int> buf_;
-  size_t index;
+    static constexpr int INIT_DEGREE = 45;
+    std::vector<int> buf_;
+    size_t index;
 public:
-  MovingAverageBuf(size_t bufSize) : buf_(bufSize), index{}
-  {  }
-  void operator=(int val)
-  {
-    buf_[index] = val;
-    index = (index + 1) % buf_.size();
-  }
-  operator double()
-  {
-    return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
-            / static_cast<double>(buf_.size());
-  }
+    MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
+    {  }
+    void operator=(int val)
+    {
+        buf_[index] = val;
+        index = (index + 1) % buf_.size();
+    }
+    operator double()
+    {
+        return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
+                / static_cast<double>(buf_.size());
+    }
 };
 
 class Controller
@@ -170,7 +196,11 @@ public:
             algo_ = std::make_unique<AlgoMultiPoint>(mode.pointVec);
         }
             break;
-        case ConfigEntry::SETMODE_PI:
+        case ConfigEntry::SETMODE_PI: {
+            ConfigEntry::PiConfMode mode
+                    = std::get<ConfigEntry::SETMODE_PI>(config_.getModeConfig());
+            algo_ = std::make_unique<AlgoPI>(mode.temp, mode.kp, mode.ki);
+        }
             break;
         }
     }

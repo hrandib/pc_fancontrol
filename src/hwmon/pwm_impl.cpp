@@ -72,14 +72,14 @@ bool PwmImpl::set(double val, const string& sourceName)
 {
     val = selectMaxValue(val, sourceName);
     uint32_t rawValue{};
-    if(val <= -1) {
-        rawValue = 0;
+    if(val < 0) {
+        rawValue = getAutoOff() ? 0 : static_cast<uint32_t>(minPwm_);
     }
     else {
         auto multiplier = (maxPwm_ - minPwm_)/100.0;
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
-//        std::cout << "PWM raw: " << rawValue << std::endl;
     }
+    std::cout << "PWM raw: " << rawValue << std::endl;
     return write(rawValue);
 }
 

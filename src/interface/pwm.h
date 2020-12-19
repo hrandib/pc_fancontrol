@@ -43,7 +43,18 @@ struct Pwm
     virtual void setMode(Mode mode) = 0;
     virtual void reset() = 0;
     virtual bool exists() = 0;
+
+    void setAutoOff(bool autoOff) {
+        autoOff_ = autoOff;
+    }
+
+    bool getAutoOff() {
+        return autoOff_;
+    }
+
     virtual ~Pwm();
+private:
+    bool autoOff_;
 };
 
 #endif // PWM_H

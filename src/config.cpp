@@ -69,10 +69,12 @@ struct PwmNode
     std::string bind;
     int minpwm, maxpwm;
     Pwm::Mode mode{Pwm::Mode::NoChange};
+    bool autoOff;
 };
 
 static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
 {
+    pwmNode.autoOff = false;
     for(auto it = node.begin(); it != node.end(); ++it) {
         pwmNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
@@ -101,6 +103,9 @@ static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
             else if(key == "maxpwm") {
                 pwmNode.maxpwm = it2->second.as<int>();
             }
+            else if(key == "fan_stop") {
+                pwmNode.autoOff = it2->second.as<bool>();
+            }
             else {
                 cout << "unknown attribute:" << key << "\n";
             }
@@ -116,7 +121,6 @@ struct ControllerNode
     SetMode mode;
     PollConf pollConfig;
     ModeConf modeConfig;
-    bool autoOff;
 };
 
 static inline int parseTime(const YAML::Node& poll)
@@ -209,14 +213,14 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
         ConfigEntry::PiConfMode confMode;
         for(auto it = node.begin(); it != node.end(); ++it) {
             auto key = it->first.as<std::string>();
-            if(key == "temp") {
-                confMode.temp = it->second.as<int>();
+            if(key == "t") {
+                confMode.temp = it->second.as<double>();
             }
-            else if(key == "p") {
-                confMode.p = it->second.as<int>();
+            else if(key == "kp") {
+                confMode.kp = it->second.as<double>();
             }
-            else if(key == "i") {
-                confMode.i = it->second.as<int>();
+            else if(key == "ki") {
+                confMode.ki = it->second.as<double>();
             }
             else {
                 throw std::invalid_argument("unrecognized attribute: " + key);
@@ -230,9 +234,8 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
     return result;
 }
 
-static void operator >>(const YAML::Node& node, ControllerNode& controllerNode) {
-
-    controllerNode.autoOff = false;
+static void operator >>(const YAML::Node& node, ControllerNode& controllerNode)
+{
     controllerNode.pollConfig.mode = PollConf::PollSimple;
     controllerNode.pollConfig.samplesCount = 1;
     controllerNode.pollConfig.timeMsecs = 1000;
@@ -269,9 +272,6 @@ static void operator >>(const YAML::Node& node, ControllerNode& controllerNode) 
             }
             else if(key == "set") {
                 controllerNode.modeConfig = parseModeConfig(controllerNode.mode, it2->second);
-            }
-            else if(key == "fan_stop") {
-                controllerNode.autoOff = it2->second.as<bool>();
             }
             else {
                 cout << "unknown attribute:" << key << "\n";
@@ -347,6 +347,7 @@ void Config::createPwms()
             pwmObj->setMode(node.mode);
             pwmObj->setMin(node.minpwm);
             pwmObj->setMax(node.maxpwm);
+            pwmObj->setAutoOff(node.autoOff);
             pwmMap_[node.name] = pwmObj;
             pwmObj->open();
         }
@@ -364,8 +365,7 @@ void Config::createControllers()
         ControllerNode node;
         controller >> node;
         ConfigEntry configEntry{};
-        configEntry.setAutoOff(node.autoOff)
-                .setModeConfig(node.modeConfig)
+        configEntry.setModeConfig(node.modeConfig)
                 .setPollConfig(node.pollConfig);
         for(auto& pwm : node.pwm) {
             if(pwmMap_.contains(pwm)) {

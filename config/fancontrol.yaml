@@ -21,6 +21,8 @@ sensors:
 # mode: 'dc' - DC mode channel mode, 'pwm' - PWM channel mode
 # bind: points to the file name which will be used for control
 # minpwm, maxpwm: allowed values range, corresponds to the range of used fan
+# fan_stop: boolean option, if true, the fan will be completely stopped
+# if temperature is below lowest defined. Default value: false
 pwms:
   - cpu_main: { type: it8665, bind: pwm1, mode: dc, minpwm: 110, maxpwm: 255 }
   - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 230 }
@@ -35,11 +37,9 @@ pwms:
 # 3. pi - proportional-integral control algorithm (not implemented yet)
 #
 # poll: polling options, can contain:
-# 1. time - sampling time in seconds, default value = 1s
+# 1. time - sampling time in seconds('s' suffix or absent)
+#    or milliseconds('ms' suffix), default value = 1s
 # 2. ma_samples - amount of samples for moving average sensor reading mode, disabled if not exist
-#
-# fan_stop: boolean option, if true, the fan will be completely stopped
-# if temperature is below lowest defined. Default value: false
 #
 # set: special options for selected control algorithm (mode)
 # 1. For 'two_point' it contains min and max allowed temperature: 'a', 'b'
@@ -60,19 +60,19 @@ controllers:
 #  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
 #      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
 #    }
-#  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: 30s,
-#      set: { temp: 42, p: 10, i: 5 }
-#    }
+  - cha1: { sensor: cpu, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
+      set: { t: 50, kp: 5, ki: 0.1 }
+    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
 #    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
 #  }
 #   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
 #      set: { a: 40, b: 75, off: true }
 #     }
-   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
-      poll: { time: 1s, ma_samples: 8 },
-      set: {{ 40 : 0 }, { 55 : 20 }, { 75 : 100 }}
-    }
+#   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
+#      poll: { time: 1s, ma_samples: 8 },
+#      set: {{ 40 : 0 }, { 55 : 20 }, { 75 : 100 }}
+#    }
 
 # Utility options (not implemented yet)
 daemon_conf:

@@ -40,7 +40,7 @@ public:
     using PointVec = std::vector<std::pair<int, int>>;
 
     struct PiConfMode {
-        int temp, p, i;
+        double temp, kp, ki;
     };
 
     struct TwoPointConfMode {
@@ -70,7 +70,6 @@ private:
     Pwms pwms_;
     ModeConf modeConf_;
     PollConf pollConf_;
-    bool autoOff_;
 public:
 
     ConfigEntry& setModeConfig(ModeConf& modeConfig)
@@ -79,7 +78,7 @@ public:
         return *this;
     }
 
-    ConfigEntry& setPiConfMode(int temp, int p, int i)
+    ConfigEntry& setPiConfMode(double temp, double p, double i)
     {
         modeConf_ = PiConfMode{temp, p, i};
         return *this;
@@ -139,11 +138,6 @@ public:
         return *this;
     }
 
-    ConfigEntry& setAutoOff(bool autoOff) {
-        autoOff_ = autoOff;
-        return *this;
-    }
-
     SetMode getMode() const
     {
         return static_cast<SetMode>(modeConf_.index());
@@ -167,11 +161,6 @@ public:
     const Sensors& getSensors() const
     {
        return sensors_;
-    }
-
-    bool getAutoOff()
-    {
-        return autoOff_;
     }
 };
 
