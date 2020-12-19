@@ -1,0 +1,11 @@
+[Unit]
+Description=fan speed regulator
+ConditionPathExists=/etc/fancontrol.yaml
+After=lm-sensors.service
+
+[Service]
+ExecStart=/usr/sbin/fancontrol
+PIDFile=/var/run/fancontrol.pid
+
+[Install]
+WantedBy=multi-user.target
