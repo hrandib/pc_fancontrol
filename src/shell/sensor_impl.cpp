@@ -21,6 +21,7 @@
  */
 
 #include "shell/sensor_impl.h"
+#include <iostream>
 
 ShellSensor::ShellSensor(const std::string& path) : executablePath{path}
 { }
@@ -29,8 +30,12 @@ int32_t ShellSensor::get()
 {
     auto now = std::chrono::system_clock::now();
     if (now > READ_PERIOD + prevReadTime_) {
-        cachedVal_ = exec(executablePath.c_str());
-        prevReadTime_ = now;
+        try {
+            cachedVal_ = exec(executablePath.c_str());
+            prevReadTime_ = now;
+        }  catch (std::exception& e) {
+            std::cerr << e.what() << "\n";
+        }
     }
     return cachedVal_;
 }
@@ -49,7 +54,7 @@ int ShellSensor::exec(const char* cmd) {
     try {
        result = std::stoi(rawResult);
     }  catch (std::exception&) {
-        result  = -1;
+        throw std::invalid_argument("Parsing shell command output failed: " + rawResult);
     }
     return result;
 }
