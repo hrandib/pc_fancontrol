@@ -5,7 +5,7 @@ After=lm-sensors.service
 
 [Service]
 ExecStart=/usr/sbin/fancontrol
-PIDFile=/var/run/fancontrol.pid
+PIDFile=/run/fancontrol.pid
 
 [Install]
 WantedBy=multi-user.target

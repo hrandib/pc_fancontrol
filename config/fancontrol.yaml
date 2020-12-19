@@ -71,7 +71,7 @@ controllers:
 #  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
 #      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
 #    }
-#  - cha1: { sensor: sample, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
+#  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
 #      set: { t: 50, kp: 2, ki: 0.1 }
 #    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,

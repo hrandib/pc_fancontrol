@@ -32,7 +32,7 @@
 class ShellSensor : public Sensor
 {
 private:
-    static inline constexpr std::chrono::milliseconds READ_PERIOD{500};
+    static inline constexpr std::chrono::seconds READ_PERIOD{1};
 
     std::string executablePath;
     std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};

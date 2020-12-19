@@ -44,8 +44,10 @@ CppApplication { name: "fancontrol"
     }
 
     Group { name: "resource"
+        prefix: "config/"
         files: [
-            "config/fancontrol.yaml"
+            "fancontrol.yaml",
+            "fancontrol.service",
         ]
     }
 
