@@ -25,11 +25,12 @@ CppApplication { name: "fancontrol"
     cpp.commonCompilerFlags: [
         "-O3", "-Wall", "-Wextra"
     ]
-
+    cpp.driverFlags: [
+        "-flto=8"
+    ]
     cpp.dynamicLibraries: [
         "pthread"
     ]
-
     Group { name: "main"
         prefix: "src/"
         files: [
