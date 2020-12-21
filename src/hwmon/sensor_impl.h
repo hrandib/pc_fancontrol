@@ -30,7 +30,7 @@ class SensorImpl : SysfsReaderImpl, public Sensor
 {
 private:
     static inline constexpr sv PATH_SUFFIX = "_input";
-    static inline constexpr std::chrono::milliseconds READ_PERIOD{500};
+    static inline constexpr std::chrono::seconds READ_PERIOD{1};
 
     std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};
     std::atomic_int cachedVal_;

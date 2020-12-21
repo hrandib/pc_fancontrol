@@ -36,8 +36,8 @@ int32_t SensorImpl::get()
 {
     auto now = std::chrono::system_clock::now();
     if (now > READ_PERIOD + prevReadTime_) {
-        cachedVal_ = readNumber()/SYSFS_DEGREE_SCALE;
         prevReadTime_ = now;
+        cachedVal_ = readNumber()/SYSFS_DEGREE_SCALE;
     }
     return cachedVal_;
 }

@@ -45,8 +45,10 @@ public:
     {  }
     MovingAverageBuf& operator=(int val)
     {
-        buf_[index] = val;
-        index = (index + 1) % buf_.size();
+        buf_[index++] = val;
+        if(buf_.size() == index) {
+            index = 0;
+        }
         return *this;
     }
     operator double()
