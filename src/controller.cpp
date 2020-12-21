@@ -42,9 +42,7 @@ void Controller::handle() {
 int32_t Controller::getHighestTemp() {
     auto sensors = config_.getSensors();
     auto highest = std::max_element(sensors.cbegin(), sensors.cend(),
-                                    [](auto& sensor_a, auto& sensor_b) {
-        return sensor_a->get() < sensor_b->get();
-    });
+                        [](const auto& a, const auto& b) { return a->get() < b->get(); });
     return (*highest)->get();
 }
 

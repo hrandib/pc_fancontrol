@@ -53,8 +53,7 @@ double PwmImpl::selectMaxValue(double val, const string& sourceName)
 {
     valueCache_[sourceName] = val;
     auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
-                               [](const auto& a, const auto& b) {
-                                       return std::max(a.second, b.second);});
+                               [](const auto& a, const auto& b) { return a.second < b.second; });
     return it->second;
 }
 
