@@ -1,5 +1,7 @@
 #include "main.h"
 
+constexpr std::string_view VERSION = "1.0";
+
 using namespace std;
 using ms = chrono::milliseconds;
 
@@ -10,6 +12,7 @@ void sigintHandler(int) {
 
 int main(int /* argc */, const char** /* argv[] */) {
     signal(SIGINT, sigintHandler);
+    std::cout << "Version: " << VERSION << "\n";
     Config config{"/etc/fancontrol.yaml"};
     config.run();
 }
