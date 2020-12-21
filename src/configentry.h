@@ -105,13 +105,13 @@ public:
         return *this;
     }
 
-    ConfigEntry& addSensor(Sensor::ptr sensor)
+    ConfigEntry& addSensor(Sensor::ptr& sensor)
     {
         sensors_.push_back(sensor);
         return *this;
     }
 
-    ConfigEntry& addPwm(Pwm::ptr pwm)
+    ConfigEntry& addPwm(Pwm::ptr& pwm)
     {
         pwms_.push_back(pwm);
         return *this;

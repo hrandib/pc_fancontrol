@@ -40,15 +40,13 @@ PwmImpl::PwmImpl(const fs::path &pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoCha
 bool PwmImpl::setControl(Control control)
 {
     SysfsWriterImpl writer{enablePath_};
-    bool openSuccess = writer.open();
-    bool writeSuccess = writer.write(static_cast<uint_fast8_t>(control));
-    return openSuccess && writeSuccess;
+    return writer.open() && writer.write(static_cast<uint32_t>(control));
 }
 
 bool PwmImpl::activateMode(Mode mode)
 {
     SysfsWriterImpl writer{modePath_};
-    return writer.open() && writer.write(static_cast<uint_fast8_t>(mode));
+    return writer.open() && writer.write(static_cast<uint32_t>(mode));
 }
 
 double PwmImpl::selectMaxValue(double val, const string& sourceName)
