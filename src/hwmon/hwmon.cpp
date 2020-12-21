@@ -85,13 +85,13 @@ Sensor::ptr Hwmon::getSensor(sv sensorName)
 
 Pwm::ptr Hwmon::getPwm(sv pwmName)
 {
-    Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
+    Pwm::ptr result;
     std::string pwm{pwmName};
     if(pwmCache_.contains(pwm)) {
         result = pwmCache_[pwm];
     }
     else {
-        Pwm::ptr result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
+        result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
         if(result->exists()) {
             pwmCache_[pwm] = result;
         }
