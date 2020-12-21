@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "hwmon/sensor_impl.h"
+#include "common/constants.h"
 
 SensorImpl::SensorImpl(const fs::path& path) : SysfsReaderImpl{path}
 {
@@ -35,7 +36,7 @@ int32_t SensorImpl::get()
 {
     auto now = std::chrono::system_clock::now();
     if (now > READ_PERIOD + prevReadTime_) {
-        cachedVal_ = readNumber()/1000;
+        cachedVal_ = readNumber()/SYSFS_DEGREE_SCALE;
         prevReadTime_ = now;
     }
     return cachedVal_;

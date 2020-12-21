@@ -41,12 +41,13 @@ private:
     std::vector<int> buf_;
     size_t index;
 public:
-    MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
+    explicit MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
     {  }
-    void operator=(int val)
+    MovingAverageBuf& operator=(int val)
     {
         buf_[index] = val;
         index = (index + 1) % buf_.size();
+        return *this;
     }
     operator double()
     {
@@ -77,7 +78,7 @@ class Controller
     void setAllPwms(double value);
 
 public:
-    Controller(string name, const ConfigEntry& conf);
+    Controller(const string& name, ConfigEntry& conf);
 
     Controller(Controller&&) = default;
 

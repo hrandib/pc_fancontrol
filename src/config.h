@@ -43,7 +43,7 @@ public:
     using PwmMap = std::map<std::string, Pwm::ptr>;
     using Node = YAML::Node;
 
-    Config(const std::string& configPath);
+    explicit Config(const std::string& configPath);
     void run();
 private:
     Node rootNode_;

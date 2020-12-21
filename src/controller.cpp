@@ -54,8 +54,10 @@ void Controller::setAllPwms(double value) {
     }
 }
 
-Controller::Controller(Controller::string name, const ConfigEntry& conf) : name_{name}, config_{std::move(conf)},
-    samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)), previousDegreeValue_{}
+Controller::Controller(const Controller::string& name, ConfigEntry& conf) : name_{name},
+    config_{std::move(conf)},
+    samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)),
+    previousDegreeValue_{}
 {
     switch(conf.getMode()) {
     case ConfigEntry::SETMODE_TWO_POINT: {

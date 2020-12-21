@@ -175,7 +175,7 @@ static inline StringVector parseSensorsPwms(const YAML::Node& node)
         }
     }
     else {
-        result.push_back(node.as<std::string>());
+        result.emplace_back(node.as<std::string>());
     }
     return result;
 }

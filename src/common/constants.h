@@ -25,6 +25,6 @@
 #include <string_view>
 
 constexpr std::string_view HWMON_ROOT = "/sys/class/hwmon";
-
+constexpr int SYSFS_DEGREE_SCALE = 1000;
 
 #endif // CONSTANTS_H
