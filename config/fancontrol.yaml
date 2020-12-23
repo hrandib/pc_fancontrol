@@ -39,13 +39,13 @@ pwms:
 # Controller binding
 # Links sensor declarations to pwm declarations with defined control algorithm
 # Can link multiple sensors to the multiple pwms.
-# sensor: Sensor binding entry. Can be multiple, highest temperature will be used as reference
+# sensor: Sensor binding entry. Can be multiple, highest temperature will be used as a reference
 # pwm: PWM channel binding entry. Can be multiple, each pwm will be controlled according to the
 #   allowed PWM range
 # mode: control algorithm, possible values:
 # 1. two_point - simple 2 point curve transformation
 # 2. multi_point - arbitrary amount of approximation points
-# 3. pi - proportional-integral control algorithm (not implemented yet)
+# 3. pi - proportional-integral control algorithm
 #
 # poll: polling options, can contain:
 # 1. time - sampling time in seconds('s' suffix or absent)
@@ -75,10 +75,10 @@ controllers:
 #      set: { t: 50, kp: 2, ki: 0.1 }
 #    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
-#    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}, fan_stop: true
+#    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}
 #  }
 #   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
-#      set: { a: 40, b: 75, off: true }
+#      set: { a: 40, b: 75 }
 #     }
 #   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
 #      poll: { time: 1s, ma_samples: 8 },
