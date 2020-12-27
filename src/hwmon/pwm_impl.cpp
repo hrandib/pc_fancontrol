@@ -27,7 +27,7 @@
 PwmImpl::PwmImpl(const fs::path& pwmPath,
                  int min, int max, Mode mode)
     : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode},
-      previousRawValue_{}
+      previousRawValue_{UINT32_MAX}
 {
     enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
