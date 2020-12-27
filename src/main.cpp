@@ -7,11 +7,12 @@ using ms = chrono::milliseconds;
 
 void sigintHandler(int) {
     Controller::stop();
-    std::cout << "SIGINT handler" << endl;
+    std::cout << "SIG handler finish" << endl;
 }
 
 int main(int /* argc */, const char** /* argv[] */) {
     signal(SIGINT, sigintHandler);
+    signal(SIGTERM, sigintHandler);
     std::cout << "Version: " << VERSION << "\n";
     Config config{"/etc/fancontrol.yaml"};
     config.run();
