@@ -43,6 +43,6 @@
 #include "config.h"
 #include "controller.h"
 #include "cstdio"
-#include "signal.h"
+#include "csignal"
 
 #endif // MAIN_H
