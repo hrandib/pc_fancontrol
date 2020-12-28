@@ -28,7 +28,7 @@
 
  namespace AppUtils
  {
-    constexpr static std::string getVersion()
+    std::string getVersion()
     {
         return std::to_string(@PROJECT_VERSION@);
     }
