@@ -50,7 +50,7 @@ private:
     HwmonMap hwmonMap_;
     SensorMap sensorMap_;
     PwmMap pwmMap_;
-    std::vector<Controller> controllers_;
+    std::vector<std::shared_ptr<Controller>> controllers_;
 
     void createHwmons();
     void createSensors();

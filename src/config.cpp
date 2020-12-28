@@ -297,7 +297,7 @@ Config::Config(const string& configPath)
 void Config::run()
 {
     for(auto& c : controllers_) {
-        c.run();
+        c->run();
     }
 }
 
@@ -385,7 +385,7 @@ void Config::createControllers()
                 throw std::invalid_argument("Selected Sensor is not defined: " + sensor);
             }
         }
-        controllers_.emplace_back(node.name, configEntry);
+        controllers_.push_back(std::make_shared<Controller>(node.name, configEntry));
     }
 }
 
