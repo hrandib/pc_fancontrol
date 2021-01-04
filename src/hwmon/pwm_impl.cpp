@@ -78,6 +78,12 @@ bool PwmImpl::set(double val, const string& sourceName)
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
     }
     if (rawValue != previousRawValue_) {
+        if(!rawValue) {
+            std::cout << sourceName << ": Fan stop" << std::endl;
+        }
+        else if(!previousRawValue_) {
+            std::cout << sourceName << ": Fan start" << std::endl;
+        }
         previousRawValue_ = rawValue;
         return write(rawValue);
     }
