@@ -24,13 +24,29 @@
 #include "hwmon/pwm_impl.h"
 #include "sysfs/reader_impl.h"
 #include <iostream>
+#include <thread>
 
 using std::cout, std::endl;
 using std::literals::string_literals::operator""s;
 
 Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
 {
-    optionalPath result = {};
+    optionalPath result;
+    for(size_t i{}; i < INIT_POLL_CYCLES; ++i) {
+        result = tryHwmonInit(hwmonName);
+        if(result) {
+            cout << hwmonName << " init success" << endl;
+            break;
+        }
+        cout << hwmonName << " init failed, attempt " << i << endl;
+        std::this_thread::sleep_for(INIT_POLL_SECS);
+    }
+    return result;
+}
+
+Hwmon::optionalPath Hwmon::tryHwmonInit(Hwmon::sv hwmonName)
+{
+    optionalPath result;
     for (const auto& entry : fs::directory_iterator(HWMON_ROOT)) {
         if (!entry.is_directory()) {
             continue;
@@ -44,6 +60,7 @@ Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
     }
     return result;
 }
+
 
 Hwmon::Hwmon(sv hwmonName)
 {

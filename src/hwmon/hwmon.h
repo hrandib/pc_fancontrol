@@ -38,11 +38,15 @@ private:
     using sv = std::string_view;
     using optionalPath = std::optional<fs::path>;
 
+    static constexpr std::chrono::seconds INIT_POLL_SECS{2};
+    static constexpr size_t INIT_POLL_CYCLES{3};
+
     fs::path hwmonPath_;
     std::map<std::string, Sensor::ptr> sensorCache_{};
     std::map<std::string, Pwm::ptr> pwmCache_{};
 
     static optionalPath getHwmonPathByName(sv hwmonName);
+    static optionalPath tryHwmonInit(sv hwmonName);
 public:
     Hwmon() : hwmonPath_{}
     { }
