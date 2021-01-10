@@ -69,7 +69,6 @@ bool PwmImpl::open()
 
 uint32_t PwmImpl::processFanStopCondition(int tempOffset)
 {
-    uint32_t rawPwmValue{};
     if (getFanStopHysteresis() == FANSTOP_DISABLE) {
         return static_cast<uint32_t>(minPwm_);
     }
@@ -79,10 +78,7 @@ uint32_t PwmImpl::processFanStopCondition(int tempOffset)
     else if(-tempOffset >= getFanStopHysteresis()) {
         isStopped_ = true;
     }
-    if(getFanStopHysteresis() == FANSTOP_DISABLE || !isStopped_) {
-        rawPwmValue = static_cast<uint32_t>(minPwm_);
-    }
-    return rawPwmValue;
+    return isStopped_ ? 0 : static_cast<uint32_t>(minPwm_);
 }
 
 bool PwmImpl::set(double val, int tempOffset, const string& sourceName)
