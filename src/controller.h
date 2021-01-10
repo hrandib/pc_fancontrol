@@ -43,7 +43,7 @@ private:
 public:
     explicit MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
     {  }
-    MovingAverageBuf& operator=(int val)
+    MovingAverageBuf& add(int val)
     {
         buf_[index++] = val;
         if(buf_.size() == index) {
@@ -51,7 +51,7 @@ public:
         }
         return *this;
     }
-    operator double()
+    double getMean()
     {
         return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
                 / static_cast<double>(buf_.size());

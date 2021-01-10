@@ -27,12 +27,12 @@ std::atomic_bool Controller::breakExecution_;
 void Controller::handle() {
     while(!breakExecution_) {
         int temp = getHighestTemp();
-        samples_ = temp;
-        double meanValue = samples_;
+        samples_.add(temp);
+        double meanValue = samples_.getMean();
         double setpoint = algo_->getSetpoint(meanValue);
         if (temp != previousDegreeValue_ && setpoint > -1) {
             previousDegreeValue_ = temp;
-            std::cout << name_ << " Peak: " << temp << " Mean: " << round(samples_ * 10)/10
+            std::cout << name_ << " Peak: " << temp << " Mean: " << round(meanValue * 10)/10
                       << " | " << round(setpoint * 10)/10 << "% pwm" << std::endl;
         }
         setAllPwms(setpoint, algo_->getNormalizedTemperature(meanValue));
