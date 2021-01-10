@@ -71,12 +71,12 @@ struct PwmNode
     std::string bind;
     int minpwm, maxpwm;
     Pwm::Mode mode{Pwm::Mode::NoChange};
-    bool autoOff;
+    int fanStopHyst;
 };
 
 static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
 {
-    pwmNode.autoOff = false;
+    pwmNode.fanStopHyst = FANSTOP_DISABLE;
     for(auto it = node.begin(); it != node.end(); ++it) {
         pwmNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
@@ -106,8 +106,13 @@ static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
                 pwmNode.maxpwm = it2->second.as<int>();
             }
             else if(key == "fan_stop") {
-                pwmNode.autoOff = it2->second.as<bool>();
+                pwmNode.fanStopHyst =
+                        it2->second.as<bool>() ? FANSTOP_DEFAULT_HYSTERESIS : FANSTOP_DISABLE;
             }
+            else if(key == "fan_stop_hysteresis") {
+                pwmNode.fanStopHyst = static_cast<int>(it2->second.as<uint32_t>());
+            }
+
             else {
                 cout << "unknown attribute:" << key << "\n";
             }
@@ -349,7 +354,7 @@ void Config::createPwms()
             pwmObj->setMode(node.mode);
             pwmObj->setMin(node.minpwm);
             pwmObj->setMax(node.maxpwm);
-            pwmObj->setAutoOff(node.autoOff);
+            pwmObj->setFanStopHysteresis(node.fanStopHyst);
             pwmMap_[node.name] = pwmObj;
             pwmObj->open();
         }

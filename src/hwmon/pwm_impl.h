@@ -46,18 +46,20 @@ private:
     int minPwm_, maxPwm_;
     Mode mode_;
     uint32_t previousRawValue_;
+    bool isStopped_;
 
     bool setControl(Control control);
     bool activateMode(Mode mode);
 
     double selectMaxValue(double val, const string& sourceName);
+    uint32_t processFanStopCondition(int tempOffset);
 public:
     PwmImpl(const fs::path& pwmPath, int min, int max,
             Mode mode = Mode::NoChange);
     PwmImpl(const fs::path& pwmPath);
 
     bool open() override;
-    bool set(double val, const string& sourceName) override;
+    bool set(double val, int tempOffset, const string& sourceName) override;
     void reset() override;
 
     void setMin(int val) override

@@ -28,13 +28,14 @@ void Controller::handle() {
     while(!breakExecution_) {
         int temp = getHighestTemp();
         samples_ = temp;
-        auto setpoint = algo_->getSetpoint(samples_);
+        double meanValue = samples_;
+        double setpoint = algo_->getSetpoint(meanValue);
         if (temp != previousDegreeValue_ && setpoint > -1) {
             previousDegreeValue_ = temp;
             std::cout << name_ << " Peak: " << temp << " Mean: " << round(samples_ * 10)/10
                       << " | " << round(setpoint * 10)/10 << "% pwm" << std::endl;
         }
-        setAllPwms(setpoint);
+        setAllPwms(setpoint, algo_->getNormalizedTemperature(meanValue));
         std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
     }
 }
@@ -46,9 +47,9 @@ int32_t Controller::getHighestTemp() {
     return (*highest)->get();
 }
 
-void Controller::setAllPwms(double value) {
+void Controller::setAllPwms(double value, int tempOffset) {
     for(auto& pwm : config_.getPwms()) {
-        pwm->set(value, name_);
+        pwm->set(value, tempOffset, name_);
     }
 }
 

@@ -27,4 +27,7 @@
 constexpr std::string_view HWMON_ROOT = "/sys/class/hwmon";
 constexpr int SYSFS_DEGREE_SCALE = 1000;
 
+constexpr int FANSTOP_DEFAULT_HYSTERESIS = 3;
+constexpr int FANSTOP_DISABLE = -1;
+
 #endif // CONSTANTS_H

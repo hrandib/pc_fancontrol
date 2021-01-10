@@ -77,7 +77,7 @@ class Controller
 
     int32_t getHighestTemp();
 
-    void setAllPwms(double value);
+    void setAllPwms(double value, int tempOffset);
 
 public:
     Controller(const string& name, ConfigEntry& conf);

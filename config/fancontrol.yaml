@@ -30,7 +30,14 @@ sensors:
 # minpwm, maxpwm: allowed PWM range, corresponds to the range of used fan,
 #   could be found experimentally
 # fan_stop: boolean option, if true, the fan will be completely stopped
-#   if temperature is below lowest defined. Default value: false
+#   if the temperature getting smaller than the lowest value defined.
+#   If set to true, implicitly defines fan_stop_hysteresis = 3.
+#   Default value: false
+# fan_stop_hysteresis: fan start/stop hysteresis value in degrees Celsius,
+#   e.g. if controller defines lowest temperature setting as 50 and hysteresis equals to 5,
+#   the fan will be stopped after reaching 45 degrees and then will be started at 50 degrees.
+#   This item also implicitly defines fan_stop = true.
+#   Default value: 3
 pwms:
 #  - cpu_main: { type: it8665, bind: pwm1, mode: dc, minpwm: 110, maxpwm: 255 }
 #  - cpu_aux: { type: it8665, bind: pwm6, mode: pwm, minpwm: 30, maxpwm: 230 }

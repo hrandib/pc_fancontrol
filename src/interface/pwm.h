@@ -37,24 +37,25 @@ struct Pwm
     };
 
     virtual bool open() = 0;
-    virtual bool set(double val, const string& sourceName) = 0;
+    virtual bool set(double val, int tempOffset, const string& sourceName) = 0;
     virtual void setMin(int val) = 0;
     virtual void setMax(int val) = 0;
     virtual void setMode(Mode mode) = 0;
     virtual void reset() = 0;
     virtual bool exists() = 0;
 
-    void setAutoOff(bool autoOff) {
-        autoOff_ = autoOff;
+    //FANSTOP_DISABLE constant is used to disable automatic fan stop feature
+    void setFanStopHysteresis(int hysteresis) {
+        fanStopHyst_ = hysteresis;
     }
 
-    bool getAutoOff() {
-        return autoOff_;
+    int getFanStopHysteresis() {
+        return fanStopHyst_;
     }
 
     virtual ~Pwm();
 private:
-    bool autoOff_;
+    int fanStopHyst_;
 };
 
 #endif // PWM_H

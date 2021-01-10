@@ -27,6 +27,7 @@
 
 struct ControlAlgo {
     virtual double getSetpoint(double) = 0;
+    virtual int getNormalizedTemperature(double) = 0;
     virtual ~ControlAlgo();
 };
 
@@ -35,7 +36,8 @@ class AlgoTwoPoint : public ControlAlgo {
 public:
     AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
     {  }
-    double getSetpoint(double temp) override;
+    double getSetpoint(double temp) final;
+    int getNormalizedTemperature(double) final;
 };
 
 class AlgoMultiPoint : public ControlAlgo {
@@ -43,7 +45,8 @@ class AlgoMultiPoint : public ControlAlgo {
 public:
     AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
     {  }
-    double getSetpoint(double temp) override;
+    double getSetpoint(double temp) final;
+    int getNormalizedTemperature(double) final;
 };
 
 class AlgoPI : public ControlAlgo {
@@ -52,7 +55,8 @@ class AlgoPI : public ControlAlgo {
 public:
     AlgoPI(double t, double kp, double ki) : t_{t}, kp_{kp}, ki_{ki}, integralErr_{}
     {  }
-    double getSetpoint(double temp) override;
+    double getSetpoint(double temp) final;
+    int getNormalizedTemperature(double) final;
 };
 
 

@@ -1,6 +1,6 @@
 #include "main.h"
 
-constexpr std::string_view VERSION = "1.0.2";
+constexpr std::string_view VERSION = "1.1.2";
 
 using namespace std;
 using ms = chrono::milliseconds;

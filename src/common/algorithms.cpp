@@ -21,6 +21,7 @@
  */
 
 #include "common/algorithms.h"
+#include <cmath>
 
 ControlAlgo::~ControlAlgo() = default;
 
@@ -36,6 +37,11 @@ double AlgoTwoPoint::getSetpoint(double temp)
     else {
         return norm_temp * k;
     }
+}
+
+int AlgoTwoPoint::getNormalizedTemperature(double temp)
+{
+    return static_cast<int>(lround(temp - a_));
 }
 
 double AlgoMultiPoint::getSetpoint(double temp)
@@ -63,7 +69,10 @@ double AlgoMultiPoint::getSetpoint(double temp)
     return result;
 }
 
-
+int AlgoMultiPoint::getNormalizedTemperature(double temp)
+{
+    return static_cast<int>(lround(temp - points_[0].first));
+}
 
 double AlgoPI::getSetpoint(double temp)
 {
@@ -79,4 +88,9 @@ double AlgoPI::getSetpoint(double temp)
         result = 100;
     }
     return result;
+}
+
+int AlgoPI::getNormalizedTemperature(double temp)
+{
+    return static_cast<int>(lround(temp - t_));
 }

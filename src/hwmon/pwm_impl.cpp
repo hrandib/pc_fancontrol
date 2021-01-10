@@ -21,13 +21,14 @@
  */
 
 #include "pwm_impl.h"
+#include "common/constants.h"
 #include <cmath>
 #include <iostream>
 
 PwmImpl::PwmImpl(const fs::path& pwmPath,
                  int min, int max, Mode mode)
     : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode},
-      previousRawValue_{UINT32_MAX}
+      previousRawValue_{UINT32_MAX}, isStopped_{}
 {
     enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
@@ -66,14 +67,29 @@ bool PwmImpl::open()
     return setControl(Control::Manual) && SysfsWriterImpl::open();
 }
 
-bool PwmImpl::set(double val, const string& sourceName)
+uint32_t PwmImpl::processFanStopCondition(int tempOffset)
+{
+    uint32_t rawPwmValue{};
+    if (getFanStopHysteresis() == FANSTOP_DISABLE) {
+        return static_cast<uint32_t>(minPwm_);
+    }
+    if(tempOffset >= 0) {
+        isStopped_ = false;
+    }
+    else if(-tempOffset >= getFanStopHysteresis()) {
+        isStopped_ = true;
+    }
+    if(getFanStopHysteresis() == FANSTOP_DISABLE || !isStopped_) {
+        rawPwmValue = static_cast<uint32_t>(minPwm_);
+    }
+    return rawPwmValue;
+}
+
+bool PwmImpl::set(double val, int tempOffset, const string& sourceName)
 {
     val = selectMaxValue(val, sourceName);
-    uint32_t rawValue{};
-    if(val < 0) {
-        rawValue = getAutoOff() ? 0 : static_cast<uint32_t>(minPwm_);
-    }
-    else {
+    uint32_t rawValue = processFanStopCondition(tempOffset);
+    if(val >= 0) {
         auto multiplier = (maxPwm_ - minPwm_)/100.0;
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
     }
