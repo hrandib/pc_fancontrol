@@ -82,8 +82,6 @@ class Controller
 public:
     Controller(const string& name, ConfigEntry& conf);
 
-    Controller(Controller&&) = default;
-
     void run() {
         processingThread_ = std::thread{&Controller::handle, this};
     }
