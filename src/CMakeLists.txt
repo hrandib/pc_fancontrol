@@ -34,8 +34,6 @@ include_directories(
 
 add_subdirectory(yaml-cpp)
 
-configure_file(appUtils.h.in appUtils.h @ONLY)
-
 function(collect_sources SOURCE_FOLDER SRC_LIST_OUT)
     set(SRC_LIST)
     file(GLOB_RECURSE SRC_LIST
@@ -47,7 +45,6 @@ function(collect_sources SOURCE_FOLDER SRC_LIST_OUT)
             list(REMOVE_ITEM SRC_LIST ${src_file})
         endif()
     endforeach()
-    message(STATUS ${SRC_LIST})
 
     set(${SRC_LIST_OUT} ${SRC_LIST} PARENT_SCOPE)
 endfunction()
