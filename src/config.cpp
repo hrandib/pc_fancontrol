@@ -368,6 +368,7 @@ void Config::createPwms()
 void Config::createControllers()
 {
     auto controllers = getNode("controllers");
+    controllers_.reserve(controllers.size());
     for(const auto& controller : controllers) {
         ControllerNode node;
         controller >> node;
