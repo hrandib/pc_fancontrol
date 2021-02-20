@@ -1,5 +1,6 @@
-*.qbs.user
-*.autosave
 default/
 .idea/
-cmake-build-debug/
+cmake-build-*/
+
+*.qbs.user
+*.autosave
