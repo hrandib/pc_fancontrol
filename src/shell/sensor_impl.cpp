@@ -21,6 +21,7 @@
  */
 
 #include "shell/sensor_impl.h"
+#include <array>
 #include <iostream>
 
 ShellSensor::ShellSensor(const std::string& path) : executablePath{path}
@@ -41,7 +42,7 @@ int32_t ShellSensor::get()
 }
 
 int ShellSensor::exec(const char* cmd) {
-    std::array<char, 128> buffer;
+    std::array<char, 128> buffer{};
     std::string rawResult;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
     if (!pipe) {
