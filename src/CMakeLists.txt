@@ -53,5 +53,7 @@ set(SRC_LIST)
 collect_sources(${CMAKE_CURRENT_SOURCE_DIR} SRC_LIST)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
-target_include_directories(yaml-cpp  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/include)
+target_include_directories(yaml-cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/include)
+target_compile_options(yaml-cpp PUBLIC -Wno-unused-parameter -Wno-shadow)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads yaml-cpp)
