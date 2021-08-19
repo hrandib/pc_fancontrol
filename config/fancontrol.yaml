@@ -74,12 +74,13 @@ pwms:
 # t - desired temperature setting
 # kp - proportional coefficient
 # ki - integral coefficient
+# max_i - maximum allowed value for I component in percents, default value = 50
 controllers:
 #  - cpu: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: two_point,
 #      poll: { time: 1s, ma_samples: 8 }, set: { a: 50, b: 78 }
 #    }
 #  - cha1: { sensor: { wd8, wd12 }, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
-#      set: { t: 50, kp: 2, ki: 0.1 }
+#      set: { t: 50, kp: 2, ki: 0.1, max_i: 60 }
 #    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
 #    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}
