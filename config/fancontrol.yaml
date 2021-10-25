@@ -84,11 +84,11 @@ controllers:
 #    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
 #    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}
-#  }
-#   - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
-#      set: { a: 40, b: 75 }
-#     }
-#   - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
-#      poll: { time: 1s, ma_samples: 8 },
-#      set: {{ 40 : 0 }, { 55 : 20 }, { 78 : 100 }}
+#    }
+#  - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
+#     set: { a: 40, b: 75 }
+#    }
+#  - cpu_multi: { sensor: cpu, pwm: { cpu_main, cpu_aux, cha }, mode: multi_point,
+#     poll: { time: 1s, ma_samples: 8 },
+#     set: {{ 40 : 0 }, { 55 : 20 }, { 78 : 100 }}
 #    }

@@ -19,7 +19,7 @@ CppApplication { name: "fancontrol"
         "-std=c17"
     ]
     cpp.cxxFlags: [
-        "-std=c++2a"
+        "-std=c++20"
     ]
     cpp.commonCompilerFlags: [
         "-O3", "-Wall", "-Wextra"
