@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,8 +25,8 @@
 
 #include "interface/pwm.h"
 #include "interface/sensor.h"
-#include <vector>
 #include <variant>
+#include <vector>
 
 class ConfigEntry
 {
@@ -34,30 +34,37 @@ public:
     enum SetMode {
         SETMODE_TWO_POINT,
         SETMODE_MULTI_POINT,
-        SETMODE_PI
+        SETMODE_PI,
     };
 
     using PointVec = std::vector<std::pair<int, int>>;
 
-    struct PiConfMode {
+    struct PiConfMode
+    {
+        static constexpr int DEFAULT_MAX_I = 50;
+
         double temp, kp, ki;
+        int max_i = DEFAULT_MAX_I;
     };
 
-    struct TwoPointConfMode {
+    struct TwoPointConfMode
+    {
         int temp_a, temp_b;
     };
 
-    struct MultiPointConfMode {
-        //Temperature -> Pwm entry table
+    struct MultiPointConfMode
+    {
+        // Temperature -> Pwm entry table
         PointVec pointVec;
     };
 
     using ModeConf = std::variant<TwoPointConfMode, MultiPointConfMode, PiConfMode>;
 
-    struct PollConf {
+    struct PollConf
+    {
         enum PollMode {
             PollSimple,
-            PollMovingAverage
+            PollMovingAverage,
         };
         PollMode mode;
         int timeMsecs, samplesCount;
@@ -71,16 +78,15 @@ private:
     ModeConf modeConf_;
     PollConf pollConf_;
 public:
-
     ConfigEntry& setModeConfig(ModeConf& modeConfig)
     {
         modeConf_ = modeConfig;
         return *this;
     }
 
-    ConfigEntry& setPiConfMode(double temp, double p, double i)
+    ConfigEntry& setPiConfMode(double temp, double p, double i, int max_i)
     {
-        modeConf_ = PiConfMode{temp, p, i};
+        modeConf_ = PiConfMode{temp, p, i, max_i};
         return *this;
     }
 
@@ -96,11 +102,10 @@ public:
         return *this;
     }
 
-    ConfigEntry& addPoint(int temp, int pwm_percent) {
+    ConfigEntry& addPoint(int temp, int pwm_percent)
+    {
         if(modeConf_.index() == SETMODE_MULTI_POINT) {
-            std::get<SETMODE_MULTI_POINT>(modeConf_)
-                    .pointVec
-                    .emplace_back(temp, pwm_percent);
+            std::get<SETMODE_MULTI_POINT>(modeConf_).pointVec.emplace_back(temp, pwm_percent);
         }
         return *this;
     }
@@ -160,7 +165,7 @@ public:
 
     const Sensors& getSensors() const
     {
-       return sensors_;
+        return sensors_;
     }
 };
 

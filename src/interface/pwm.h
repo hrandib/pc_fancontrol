@@ -33,7 +33,7 @@ struct Pwm
     enum class Mode {
         Dc,
         Pwm,
-        NoChange
+        NoChange,
     };
 
     virtual bool open() = 0;
@@ -44,12 +44,14 @@ struct Pwm
     virtual void reset() = 0;
     virtual bool exists() = 0;
 
-    //FANSTOP_DISABLE constant is used to disable automatic fan stop feature
-    void setFanStopHysteresis(int hysteresis) {
+    // FANSTOP_DISABLE constant is used to disable automatic fan stop feature
+    void setFanStopHysteresis(int hysteresis)
+    {
         fanStopHyst_ = hysteresis;
     }
 
-    int getFanStopHysteresis() {
+    int getFanStopHysteresis()
+    {
         return fanStopHyst_;
     }
 

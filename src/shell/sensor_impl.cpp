@@ -30,31 +30,34 @@ ShellSensor::ShellSensor(const std::string& path) : executablePath{path}
 int32_t ShellSensor::get()
 {
     auto now = std::chrono::system_clock::now();
-    if (now > READ_PERIOD + prevReadTime_) {
+    if(now > READ_PERIOD + prevReadTime_) {
         try {
             cachedVal_ = exec(executablePath.c_str());
             prevReadTime_ = now;
-        }  catch (std::exception& e) {
+        }
+        catch(std::exception& e) {
             std::cerr << e.what() << "\n";
         }
     }
     return cachedVal_;
 }
 
-int ShellSensor::exec(const char* cmd) {
+int ShellSensor::exec(const char* cmd)
+{
     std::array<char, 128> buffer{};
     std::string rawResult;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
+    if(!pipe) {
         throw std::runtime_error("popen() failed!");
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         rawResult += buffer.data();
     }
     int result{};
     try {
-       result = std::stoi(rawResult);
-    }  catch (std::exception&) {
+        result = std::stoi(rawResult);
+    }
+    catch(std::exception&) {
         throw std::invalid_argument("Parsing shell command output failed: " + rawResult);
     }
     return result;

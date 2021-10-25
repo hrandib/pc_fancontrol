@@ -1,4 +1,4 @@
-    /*
+/*
  * Copyright (c) 2020 Dmytro Shestakov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +21,6 @@
  */
 
 #include "sysfs/writer_impl.h"
-
 
 bool SysfsWriterImpl::open()
 {

@@ -27,11 +27,12 @@ ControlAlgo::~ControlAlgo() = default;
 
 double AlgoTwoPoint::getSetpoint(double temp)
 {
-    static const double k = 100.0/(b_ - a_);
+    static const double k = 100.0 / (b_ - a_);
     double norm_temp = temp - a_;
     if(temp >= b_) {
         return 100;
-    } else if(norm_temp < 0) {
+    }
+    else if(norm_temp < 0) {
         return -1;
     }
     else {
@@ -57,7 +58,7 @@ double AlgoMultiPoint::getSetpoint(double temp)
         if(end->first > temp) {
             auto degDiff = double(end->first - begin->first);
             auto pwmDiff = double(end->second - begin->second);
-            auto multiplier = pwmDiff/degDiff;
+            auto multiplier = pwmDiff / degDiff;
             result = begin->second + ((temp - begin->first) * multiplier);
             break;
         }
@@ -78,9 +79,10 @@ double AlgoPI::getSetpoint(double temp)
 {
     double pe = kp_ * (temp - t_);
     integralErr_ += ki_ * (temp - t_);
-    if(integralErr_ > 50) {
-        integralErr_ = 50;
-    } else if (integralErr_ < 0) {
+    if(integralErr_ > max_i_) {
+        integralErr_ = max_i_;
+    }
+    else if(integralErr_ < 0) {
         integralErr_ = 0;
     }
     double result = pe + integralErr_;

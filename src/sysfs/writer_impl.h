@@ -28,13 +28,11 @@ class SysfsWriterImpl : public SysfsWriter
 {
 private:
     std::ofstream fstream_{};
-
 public:
     using SysfsWriter::SysfsWriter;
 
     bool open() override;
     bool write(uint32_t val) override;
-
 };
 
 #endif // SYSFSWRITERIMPL_H

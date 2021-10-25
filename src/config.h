@@ -24,9 +24,9 @@
 #define CONFIG_H
 
 #include "configentry.h"
-#include "yaml-cpp/yaml.h"
-#include "hwmon/hwmon.h"
 #include "controller.h"
+#include "hwmon/hwmon.h"
+#include "yaml-cpp/yaml.h"
 
 #include <filesystem>
 #include <optional>

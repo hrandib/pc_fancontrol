@@ -23,9 +23,9 @@
 #define SYSFS_READER_H
 
 #include <filesystem>
-#include <string>
-#include <stdlib.h>
 #include <fstream>
+#include <stdlib.h>
+#include <string>
 
 namespace fs = std::filesystem;
 
@@ -33,7 +33,6 @@ class SysfsReader
 {
 private:
     fs::path filePath_;
-
 public:
     using string = std::string;
     using sv = std::string_view;
@@ -42,18 +41,21 @@ public:
     SysfsReader(const fs::path& filePath) : filePath_{filePath}
     { }
 
-    const fs::path& getFilePath() {
+    const fs::path& getFilePath()
+    {
         return filePath_;
     }
 
-    void concatWithFilePath(sv suffix) {
+    void concatWithFilePath(sv suffix)
+    {
         filePath_ += suffix;
     }
 
     virtual bool open() = 0;
     virtual string read() = 0;
 
-    int32_t readNumber() {
+    int32_t readNumber()
+    {
         return std::atoi(read().c_str());
     }
 
@@ -66,7 +68,6 @@ class SysfsWriter
 {
 private:
     fs::path filePath_;
-
 public:
     using string = std::string;
     using sv = std::string_view;
@@ -75,11 +76,13 @@ public:
     SysfsWriter(const fs::path& filePath) : filePath_{filePath}
     { }
 
-    const fs::path& getFilePath() {
+    const fs::path& getFilePath()
+    {
         return filePath_;
     }
 
-    void concatToFilePath(sv suffix) {
+    void concatToFilePath(sv suffix)
+    {
         filePath_ += suffix;
     }
 

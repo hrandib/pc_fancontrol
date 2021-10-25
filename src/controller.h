@@ -23,16 +23,18 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "common/algorithms.h"
+#include "configentry.h"
 #include "interface/pwm.h"
 #include "interface/sensor.h"
-#include "configentry.h"
-#include "common/algorithms.h"
 
-#include <thread>
+#include <algorithm>
+#include <atomic>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <numeric>
-#include <cmath>
+#include <thread>
 
 class MovingAverageBuf
 {
@@ -42,7 +44,7 @@ private:
     size_t index;
 public:
     explicit MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
-    {  }
+    { }
     MovingAverageBuf& add(int val)
     {
         buf_[index++] = val;
@@ -53,8 +55,7 @@ public:
     }
     double getMean()
     {
-        return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0))
-                / static_cast<double>(buf_.size());
+        return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0)) / static_cast<double>(buf_.size());
     }
 };
 
@@ -78,20 +79,22 @@ class Controller
     int32_t getHighestTemp();
 
     void setAllPwms(double value, int tempOffset);
-
 public:
     Controller(const string& name, ConfigEntry& conf);
 
-    void run() {
-        processingThread_ = std::thread{&Controller::handle, this};
+    void run()
+    {
+        processingThread_ = std::thread{ &Controller::handle, this };
     }
 
-    ~Controller() {
+    ~Controller()
+    {
         processingThread_.join();
-        std::cout << "\'" << name_<< "\' controller finished\n";
+        std::cout << "\'" << name_ << "\' controller finished\n";
     }
 
-    static void stop() {
+    static void stop()
+    {
         breakExecution_ = true;
     }
 };

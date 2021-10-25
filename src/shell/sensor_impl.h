@@ -25,9 +25,8 @@
 #include "interface/sensor.h"
 #include <atomic>
 #include <chrono>
-#include <string_view>
 #include <filesystem>
-
+#include <string_view>
 
 class ShellSensor : public Sensor
 {
@@ -40,13 +39,15 @@ private:
 public:
     ShellSensor(const std::string& executablePath);
 
-    bool open() override {
+    bool open() override
+    {
         return true;
     }
 
     int32_t get() override;
 
-    bool exists() override {
+    bool exists() override
+    {
         return true;
     }
 private:
@@ -57,7 +58,8 @@ template<typename T>
 inline Sensor::ptr make_sensor(const std::string&);
 
 template<>
-inline Sensor::ptr make_sensor<ShellSensor>(const std::string& path) {
+inline Sensor::ptr make_sensor<ShellSensor>(const std::string& path)
+{
     return std::make_shared<ShellSensor>(path);
 }
 

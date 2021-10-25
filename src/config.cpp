@@ -31,7 +31,8 @@ using SetMode = ConfigEntry::SetMode;
 using ModeConf = ConfigEntry::ModeConf;
 using StringVector = std::vector<std::string>;
 
-static inline std::string to_string(StringVector& vec) {
+static inline std::string to_string(StringVector& vec)
+{
     std::string result = "\'";
     for(auto& el : vec) {
         result += el;
@@ -48,11 +49,11 @@ struct SensorNode
     std::string bind;
 };
 
-static void operator >>(const YAML::Node& node, SensorNode& sensNode)
+static void operator>>(const YAML::Node& node, SensorNode& sensNode)
 {
     for(auto it = node.begin(); it != node.end(); ++it) {
         sensNode.name = it->first.as<std::string>();
-        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
+        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
             auto key = it2->first.as<std::string>();
             if(key == "type") {
                 sensNode.type = it2->second.as<std::string>();
@@ -61,7 +62,7 @@ static void operator >>(const YAML::Node& node, SensorNode& sensNode)
                 sensNode.bind = it2->second.as<std::string>();
             }
         }
-   }
+    }
 }
 
 struct PwmNode
@@ -74,12 +75,12 @@ struct PwmNode
     int fanStopHyst;
 };
 
-static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
+static void operator>>(const YAML::Node& node, PwmNode& pwmNode)
 {
     pwmNode.fanStopHyst = FANSTOP_DISABLE;
     for(auto it = node.begin(); it != node.end(); ++it) {
         pwmNode.name = it->first.as<std::string>();
-        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++ it2) {
+        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
             auto key = it2->first.as<std::string>();
             if(key == "type") {
                 pwmNode.type = it2->second.as<std::string>();
@@ -106,8 +107,7 @@ static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
                 pwmNode.maxpwm = it2->second.as<int>();
             }
             else if(key == "fan_stop") {
-                pwmNode.fanStopHyst =
-                        it2->second.as<bool>() ? FANSTOP_DEFAULT_HYSTERESIS : FANSTOP_DISABLE;
+                pwmNode.fanStopHyst = it2->second.as<bool>() ? FANSTOP_DEFAULT_HYSTERESIS : FANSTOP_DISABLE;
             }
             else if(key == "fan_stop_hysteresis") {
                 pwmNode.fanStopHyst = static_cast<int>(it2->second.as<uint32_t>());
@@ -117,7 +117,7 @@ static void operator >>(const YAML::Node& node, PwmNode& pwmNode)
                 cout << "unknown attribute:" << key << "\n";
             }
         }
-   }
+    }
 }
 
 struct ControllerNode
@@ -140,8 +140,8 @@ static inline int parseTime(const YAML::Node& poll)
     catch(std::exception&) {
         throw std::invalid_argument("Error parsing poll time: " + stringValue);
     }
-    if (stringValue.find("ms") == std::string::npos) {
-        //used field units - secs, convert to ms
+    if(stringValue.find("ms") == std::string::npos) {
+        // used field units - secs, convert to ms
         result *= 1000;
     }
     return result;
@@ -189,59 +189,61 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
 {
     ModeConf result;
     switch(mode) {
-    case ConfigEntry::SETMODE_TWO_POINT: {
-        ConfigEntry::TwoPointConfMode confMode;
-        for(auto it = node.begin(); it != node.end(); ++it) {
-            auto key = it->first.as<std::string>();
-            if(key == "a") {
-                confMode.temp_a = it->second.as<int>();
+        case ConfigEntry::SETMODE_TWO_POINT: {
+            ConfigEntry::TwoPointConfMode confMode;
+            for(auto it = node.begin(); it != node.end(); ++it) {
+                auto key = it->first.as<std::string>();
+                if(key == "a") {
+                    confMode.temp_a = it->second.as<int>();
+                }
+                else if(key == "b") {
+                    confMode.temp_b = it->second.as<int>();
+                }
+                else {
+                    throw std::invalid_argument("unrecognized attribute: " + key);
+                }
             }
-            else if(key == "b") {
-                confMode.temp_b = it->second.as<int>();
+            result = confMode;
+        } break;
+        case ConfigEntry::SETMODE_MULTI_POINT: {
+            ConfigEntry::MultiPointConfMode confMode;
+            for(auto it = node.begin(); it != node.end(); ++it) {
+                auto key = it->first.begin()->first.as<int>();
+                auto val = it->first.begin()->second.as<int>();
+                confMode.pointVec.emplace_back(key, val);
             }
-            else {
-                throw std::invalid_argument("unrecognized attribute: " + key);
+            result = confMode;
+        } break;
+        case ConfigEntry::SETMODE_PI: {
+            ConfigEntry::PiConfMode confMode;
+            for(auto it = node.begin(); it != node.end(); ++it) {
+                auto key = it->first.as<std::string>();
+                if(key == "t") {
+                    confMode.temp = it->second.as<double>();
+                }
+                else if(key == "kp") {
+                    confMode.kp = it->second.as<double>();
+                }
+                else if(key == "ki") {
+                    confMode.ki = it->second.as<double>();
+                }
+                else if(key == "max_i") {
+                    int max_i = it->second.as<int>();
+                    if(max_i > 0 && max_i <= 100) {
+                        confMode.max_i = max_i;
+                    }
+                }
+                else {
+                    throw std::invalid_argument("unrecognized attribute: " + key);
+                }
             }
-        }
-        result = confMode;
-    }
-        break;
-    case ConfigEntry::SETMODE_MULTI_POINT: {
-        ConfigEntry::MultiPointConfMode confMode;
-        for(auto it = node.begin(); it != node.end(); ++it) {
-            auto key = it->first.begin()->first.as<int>();
-            auto val = it->first.begin()->second.as<int>();
-            confMode.pointVec.emplace_back(key, val);
-        }
-        result = confMode;
-    }
-        break;
-    case ConfigEntry::SETMODE_PI: {
-        ConfigEntry::PiConfMode confMode;
-        for(auto it = node.begin(); it != node.end(); ++it) {
-            auto key = it->first.as<std::string>();
-            if(key == "t") {
-                confMode.temp = it->second.as<double>();
-            }
-            else if(key == "kp") {
-                confMode.kp = it->second.as<double>();
-            }
-            else if(key == "ki") {
-                confMode.ki = it->second.as<double>();
-            }
-            else {
-                throw std::invalid_argument("unrecognized attribute: " + key);
-            }
-        }
-        result = confMode;
-    }
-        break;
-
+            result = confMode;
+        } break;
     }
     return result;
 }
 
-static void operator >>(const YAML::Node& node, ControllerNode& controllerNode)
+static void operator>>(const YAML::Node& node, ControllerNode& controllerNode)
 {
     controllerNode.pollConfig.mode = PollConf::PollSimple;
     controllerNode.pollConfig.samplesCount = 1;
@@ -269,8 +271,7 @@ static void operator >>(const YAML::Node& node, ControllerNode& controllerNode)
                     controllerNode.mode = ConfigEntry::SETMODE_PI;
                 }
                 else {
-                    cout << "Incompatible controller mode, entry will be skipped: "
-                            + rawMode << "\n";
+                    cout << "Incompatible controller mode, entry will be skipped: " + rawMode << "\n";
                     break;
                 }
             }
@@ -284,7 +285,7 @@ static void operator >>(const YAML::Node& node, ControllerNode& controllerNode)
                 cout << "unknown attribute:" << key << "\n";
             }
         }
-   }
+    }
 }
 
 Config::Config(const string& configPath)
@@ -309,7 +310,7 @@ void Config::run()
 void Config::createHwmons()
 {
     auto hwmonList = getNode("hwmon").as<std::vector<string>>();
-    for (auto& hwmon : hwmonList) {
+    for(auto& hwmon : hwmonList) {
         std::cout << hwmon << ": ";
         hwmonMap_.emplace(hwmon, hwmon);
     }
@@ -323,10 +324,10 @@ void Config::createSensors()
         SensorNode node;
         sensor >> node;
         cout << node.name << " " << node.type << " " << node.bind << "\n";
-        if (node.type == "shell_cmd") {
+        if(node.type == "shell_cmd") {
             sensorMap_[node.name] = make_sensor<ShellSensor>(node.bind);
         }
-        else if (hwmonMap_.contains(node.type)){
+        else if(hwmonMap_.contains(node.type)) {
             sensorMap_[node.name] = hwmonMap_[node.type].getSensor(node.bind);
             sensorMap_[node.name]->open();
         }
@@ -343,13 +344,9 @@ void Config::createPwms()
     for(const auto& pwm : pwms) {
         PwmNode node;
         pwm >> node;
-        cout << node.name << " "
-             << node.type << " "
-             << node.bind << " "
-             << static_cast<uint32_t>(node.mode) << " "
-             << node.minpwm << " "
-             << node.maxpwm << "\n";
-        if (hwmonMap_.contains(node.type)) {
+        cout << node.name << " " << node.type << " " << node.bind << " " << static_cast<uint32_t>(node.mode) << " "
+             << node.minpwm << " " << node.maxpwm << "\n";
+        if(hwmonMap_.contains(node.type)) {
             auto pwmObj = hwmonMap_[node.type].getPwm(node.bind);
             pwmObj->setMode(node.mode);
             pwmObj->setMin(node.minpwm);
@@ -373,8 +370,7 @@ void Config::createControllers()
         ControllerNode node;
         controller >> node;
         ConfigEntry configEntry{};
-        configEntry.setModeConfig(node.modeConfig)
-                .setPollConfig(node.pollConfig);
+        configEntry.setModeConfig(node.modeConfig).setPollConfig(node.pollConfig);
         for(auto& pwm : node.pwm) {
             if(pwmMap_.contains(pwm)) {
                 configEntry.addPwm(pwmMap_[pwm]);
@@ -403,7 +399,8 @@ YAML::Node Config::getNode(const string& nodeName) const
         if(!result.IsDefined()) {
             throw std::invalid_argument("Config node is not defined: " + nodeName);
         }
-    } catch(const YAML::InvalidNode&) {
+    }
+    catch(const YAML::InvalidNode&) {
         throw std::invalid_argument("Config node not found: " + nodeName);
     }
     return result;

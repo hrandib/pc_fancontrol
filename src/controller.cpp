@@ -24,58 +24,54 @@
 
 std::atomic_bool Controller::breakExecution_;
 
-void Controller::handle() {
+void Controller::handle()
+{
     while(!breakExecution_) {
         int temp = getHighestTemp();
         samples_.add(temp);
         double meanValue = samples_.getMean();
         double setpoint = algo_->getSetpoint(meanValue);
-        if (temp != previousDegreeValue_ && setpoint > -1) {
+        if(temp != previousDegreeValue_ && setpoint > -1) {
             previousDegreeValue_ = temp;
-            std::cout << name_ << " Peak: " << temp << " Mean: " << round(meanValue * 10)/10
-                      << " | " << round(setpoint * 10)/10 << "% pwm" << std::endl;
+            std::cout << name_ << " Peak: " << temp << " Mean: " << round(meanValue * 10) / 10 << " | "
+                      << round(setpoint * 10) / 10 << "% pwm" << std::endl;
         }
         setAllPwms(setpoint, algo_->getNormalizedTemperature(meanValue));
         std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
     }
 }
 
-int32_t Controller::getHighestTemp() {
+int32_t Controller::getHighestTemp()
+{
     auto sensors = config_.getSensors();
-    auto highest = std::max_element(sensors.cbegin(), sensors.cend(),
-                        [](const auto& a, const auto& b) { return a->get() < b->get(); });
+    auto highest = std::max_element(
+      sensors.cbegin(), sensors.cend(), [](const auto& a, const auto& b) { return a->get() < b->get(); });
     return (*highest)->get();
 }
 
-void Controller::setAllPwms(double value, int tempOffset) {
+void Controller::setAllPwms(double value, int tempOffset)
+{
     for(auto& pwm : config_.getPwms()) {
         pwm->set(value, tempOffset, name_);
     }
 }
 
-Controller::Controller(const Controller::string& name, ConfigEntry& conf) : name_{name},
-    config_{std::move(conf)},
-    samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)),
-    previousDegreeValue_{}
+Controller::Controller(const Controller::string& name, ConfigEntry& conf) :
+  name_{name}, config_{std::move(conf)},
+  samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)), previousDegreeValue_{}
 {
     switch(conf.getMode()) {
-    case ConfigEntry::SETMODE_TWO_POINT: {
-        ConfigEntry::TwoPointConfMode mode
-                = std::get<ConfigEntry::SETMODE_TWO_POINT>(config_.getModeConfig());
-        algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
-    }
-        break;
-    case ConfigEntry::SETMODE_MULTI_POINT: {
-        ConfigEntry::MultiPointConfMode mode
-                = std::get<ConfigEntry::SETMODE_MULTI_POINT>(config_.getModeConfig());
-        algo_ = std::make_unique<AlgoMultiPoint>(mode.pointVec);
-    }
-        break;
-    case ConfigEntry::SETMODE_PI: {
-        ConfigEntry::PiConfMode mode
-                = std::get<ConfigEntry::SETMODE_PI>(config_.getModeConfig());
-        algo_ = std::make_unique<AlgoPI>(mode.temp, mode.kp, mode.ki);
-    }
-        break;
+        case ConfigEntry::SETMODE_TWO_POINT: {
+            ConfigEntry::TwoPointConfMode mode = std::get<ConfigEntry::SETMODE_TWO_POINT>(config_.getModeConfig());
+            algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);
+        } break;
+        case ConfigEntry::SETMODE_MULTI_POINT: {
+            ConfigEntry::MultiPointConfMode mode = std::get<ConfigEntry::SETMODE_MULTI_POINT>(config_.getModeConfig());
+            algo_ = std::make_unique<AlgoMultiPoint>(mode.pointVec);
+        } break;
+        case ConfigEntry::SETMODE_PI: {
+            ConfigEntry::PiConfMode mode = std::get<ConfigEntry::SETMODE_PI>(config_.getModeConfig());
+            algo_ = std::make_unique<AlgoPI>(mode.temp, mode.kp, mode.ki, mode.max_i);
+        } break;
     }
 }

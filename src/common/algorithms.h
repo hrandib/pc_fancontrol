@@ -25,39 +25,43 @@
 
 #include "configentry.h"
 
-struct ControlAlgo {
+struct ControlAlgo
+{
     virtual double getSetpoint(double) = 0;
     virtual int getNormalizedTemperature(double) = 0;
     virtual ~ControlAlgo();
 };
 
-class AlgoTwoPoint : public ControlAlgo {
+class AlgoTwoPoint : public ControlAlgo
+{
     double a_, b_;
 public:
     AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
-    {  }
+    { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double) final;
 };
 
-class AlgoMultiPoint : public ControlAlgo {
+class AlgoMultiPoint : public ControlAlgo
+{
     const ConfigEntry::PointVec points_;
 public:
     AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
-    {  }
+    { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double) final;
 };
 
-class AlgoPI : public ControlAlgo {
+class AlgoPI : public ControlAlgo
+{
     const double t_, kp_, ki_;
+    const int max_i_;
     double integralErr_;
 public:
-    AlgoPI(double t, double kp, double ki) : t_{t}, kp_{kp}, ki_{ki}, integralErr_{}
-    {  }
+    AlgoPI(double t, double kp, double ki, int max_i) : t_{t}, kp_{kp}, ki_{ki}, max_i_{max_i}, integralErr_{}
+    { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double) final;
 };
-
 
 #endif // ALGO_H
