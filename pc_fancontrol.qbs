@@ -1,6 +1,9 @@
 import qbs
 
 Project {
+
+    minimumQbsVersion: "1.22.0"
+
     references: [
         "src/src.qbs",
         "src/yaml-cpp.qbs",
@@ -25,7 +28,7 @@ CppApplication { name: "fancontrol"
         "-O3", "-Wall", "-Wextra"
     ]
     cpp.driverFlags: [
-        "-flto=8"
+        "-flto"
     ]
     cpp.dynamicLibraries: [
         "pthread"

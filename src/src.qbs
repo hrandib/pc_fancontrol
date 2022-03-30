@@ -7,7 +7,7 @@ Product { name: "src"
         Depends { name: "cpp" }
 
         cpp.includePaths: [
-            product.sourceDirectory
+            exportingProduct.sourceDirectory
         ]
 
         Group { name: "common"

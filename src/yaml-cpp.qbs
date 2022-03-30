@@ -7,7 +7,7 @@ Product { name: "yaml-cpp"
         Depends { name: "cpp" }
 
         cpp.includePaths: [
-            FileInfo.joinPaths(product.sourceDirectory, "yaml-cpp/include")
+            FileInfo.joinPaths(exportingProduct.sourceDirectory, "yaml-cpp/include")
         ]
 
         Group { name: "yaml-inc"
