@@ -25,10 +25,10 @@ CppApplication { name: "fancontrol"
         "-std=c++20"
     ]
     cpp.commonCompilerFlags: [
-        "-O3", "-Wall", "-Wextra"
+        "-Wall", "-Wextra"
     ]
     cpp.driverFlags: [
-        "-flto"
+        "-flto=8", "-O3"
     ]
     cpp.dynamicLibraries: [
         "pthread"
