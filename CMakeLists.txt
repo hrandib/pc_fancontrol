@@ -21,7 +21,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0.4)
-project(pc_fancontrol VERSION 1.0.1)
+project(pc_fancontrol VERSION 1.2.0)
 
 # WIN64 is included in WIN32
 if (WIN32)
@@ -29,6 +29,6 @@ if (WIN32)
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -O3 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -O3 -flto -Wall -Wextra")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
