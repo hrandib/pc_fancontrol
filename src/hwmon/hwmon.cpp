@@ -33,7 +33,7 @@ static string toString(const Hwmon::Attributes& attrs)
 {
     string result = attrs.nodeName;
     if(attrs) {
-        result += "." + attrs.alias + " id='" + attrs.keyValue + "'";
+        result = attrs.alias + " " + result + " id=\'" + attrs.keyValue + "\'";
     }
     return result;
 }
@@ -45,10 +45,10 @@ Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
     for(size_t i{}; i < INIT_POLL_CYCLES; ++i) {
         result = findPath(attrs);
         if(result) {
-            cout << nodeName << " init success" << endl;
+            cout << nodeName << " init success\n" << endl;
             break;
         }
-        cout << nodeName << " init failed, attempt " << i << endl;
+        cout << nodeName << " init failed, attempt\n " << i << endl;
         std::this_thread::sleep_for(INIT_POLL_SECS);
     }
     return result;

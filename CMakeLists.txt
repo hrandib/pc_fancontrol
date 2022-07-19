@@ -21,7 +21,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0.4)
-project(pc_fancontrol VERSION 1.2.0)
+project(pc_fancontrol VERSION 1.3.0)
 
 # WIN64 is included in WIN32
 if (WIN32)

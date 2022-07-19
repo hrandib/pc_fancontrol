@@ -46,7 +46,7 @@ public:
 
         explicit operator bool() const
         {
-            return !alias.empty();
+            return !keyValue.empty();
         }
     };
 private:

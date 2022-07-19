@@ -30,6 +30,7 @@ using PollConf = ConfigEntry::PollConf;
 using SetMode = ConfigEntry::SetMode;
 using ModeConf = ConfigEntry::ModeConf;
 using StringVector = std::vector<std::string>;
+using HwAttrs = Hwmon::Attributes;
 
 [[maybe_unused]] static inline std::string to_string(StringVector& vec)
 {
@@ -200,7 +201,7 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
                     confMode.temp_b = it->second.as<int>();
                 }
                 else {
-                    throw std::invalid_argument("unrecognized attribute: " + key);
+                    throw std::invalid_argument("unknown attribute: " + key);
                 }
             }
             result = confMode;
@@ -234,13 +235,47 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
                     }
                 }
                 else {
-                    throw std::invalid_argument("unrecognized attribute: " + key);
+                    throw std::invalid_argument("unknown attribute: " + key);
                 }
             }
             result = confMode;
         } break;
     }
     return result;
+}
+
+static inline HwAttrs parseHwmonAttributes(const YAML::Node& node)
+{
+    using std::string;
+    string keyPath{DEFAULT_HWMON_KEY_PATH};
+    string nodeName, bind, alias;
+    if(node.IsScalar()) {
+        nodeName = node.as<std::string>();
+    }
+    else {
+        nodeName = node.begin()->first.as<string>();
+        const auto attrsNode = node.begin()->second;
+        for(auto it = attrsNode.begin(); it != attrsNode.end(); ++it) {
+            auto key = it->first.as<string>();
+            if(key == "name") {
+                alias = it->second.as<string>();
+            }
+            else if(key == "keyPath") {
+                keyPath = it->second.as<string>();
+            }
+            else if(key == "bind") {
+                bind = it->second.as<string>();
+            }
+            else {
+                cout << "unknown attribute:" << key << "\n";
+            }
+        }
+        if(nodeName.empty() || bind.empty()) {
+            throw std::invalid_argument(
+              "hwmon config entry is inconsistent, must contain \'bind\' and \'name\' fields");
+        }
+    }
+    return {.nodeName = nodeName, .alias = alias, .keyValue = bind, .keyPath = keyPath};
 }
 
 static void operator>>(const YAML::Node& node, ControllerNode& controllerNode)
@@ -309,16 +344,18 @@ void Config::run()
 
 void Config::createHwmons()
 {
-    auto hwmonList = getNode("hwmon").as<std::vector<string>>();
-    for(auto& hwmon : hwmonList) {
-        std::cout << hwmon << ": ";
-        hwmonMap_.emplace(hwmon, Hwmon::Attributes{hwmon});
+    cout << "=== HWMON ===\n";
+    auto hwmonList = getNode("hwmon");
+    for(const auto& hwmon : hwmonList) {
+        auto attrs = parseHwmonAttributes(hwmon);
+        cout << attrs.nodeName << (attrs ? " -> " + attrs.keyValue : "") << "\n";
+        hwmonMap_.emplace((attrs ? attrs.alias : attrs.nodeName), attrs);
     }
-    std::cout << "\n";
 }
 
 void Config::createSensors()
 {
+    cout << "=== SENSORS ===\n";
     auto sensors = getNode("sensors");
     for(const auto& sensor : sensors) {
         SensorNode node;
@@ -340,6 +377,7 @@ void Config::createSensors()
 
 void Config::createPwms()
 {
+    cout << "=== PWMS ===\n";
     auto pwms = getNode("pwms");
     for(const auto& pwm : pwms) {
         PwmNode node;
