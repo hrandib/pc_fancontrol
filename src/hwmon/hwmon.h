@@ -34,6 +34,21 @@ namespace fs = std::filesystem;
 
 class Hwmon
 {
+public:
+    struct Attributes
+    {
+        using string = std::string;
+
+        const string nodeName;
+        const string alias{};
+        const string keyValue{};
+        const string keyPath = string{DEFAULT_HWMON_KEY_PATH};
+
+        explicit operator bool() const
+        {
+            return !alias.empty();
+        }
+    };
 private:
     using sv = std::string_view;
     using optionalPath = std::optional<fs::path>;
@@ -45,13 +60,10 @@ private:
     std::map<std::string, Sensor::ptr> sensorCache_{};
     std::map<std::string, Pwm::ptr> pwmCache_{};
 
-    static optionalPath getHwmonPathByName(sv hwmonName);
-    static optionalPath tryHwmonInit(sv hwmonName);
+    static optionalPath getHwmonPath(const Attributes& attrs);
+    static optionalPath findPath(const Attributes& attrs);
 public:
-    Hwmon() : hwmonPath_{}
-    { }
-    Hwmon(sv hwmonName);
-    bool setName(sv hwmonName);
+    Hwmon(const Attributes& attrs);
     Sensor::ptr getSensor(sv sensorName);
     Pwm::ptr getPwm(sv pwmName);
     const fs::path& getHwmonPath();

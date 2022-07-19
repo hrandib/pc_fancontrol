@@ -25,6 +25,8 @@
 #include <string_view>
 
 constexpr std::string_view HWMON_ROOT = "/sys/class/hwmon";
+constexpr std::string_view DEFAULT_HWMON_KEY_PATH = "device/wwid";
+
 constexpr int SYSFS_DEGREE_SCALE = 1000;
 
 constexpr int FANSTOP_DEFAULT_HYSTERESIS = 3;

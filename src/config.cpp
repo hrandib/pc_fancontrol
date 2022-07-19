@@ -31,7 +31,7 @@ using SetMode = ConfigEntry::SetMode;
 using ModeConf = ConfigEntry::ModeConf;
 using StringVector = std::vector<std::string>;
 
-static inline std::string to_string(StringVector& vec)
+[[maybe_unused]] static inline std::string to_string(StringVector& vec)
 {
     std::string result = "\'";
     for(auto& el : vec) {
@@ -271,7 +271,7 @@ static void operator>>(const YAML::Node& node, ControllerNode& controllerNode)
                     controllerNode.mode = ConfigEntry::SETMODE_PI;
                 }
                 else {
-                    cout << "Incompatible controller mode, entry will be skipped: " + rawMode << "\n";
+                    cout << "Incompatible controller mode, the entry will be skipped: " + rawMode << "\n";
                     break;
                 }
             }
@@ -312,7 +312,7 @@ void Config::createHwmons()
     auto hwmonList = getNode("hwmon").as<std::vector<string>>();
     for(auto& hwmon : hwmonList) {
         std::cout << hwmon << ": ";
-        hwmonMap_.emplace(hwmon, hwmon);
+        hwmonMap_.emplace(hwmon, Hwmon::Attributes{hwmon});
     }
     std::cout << "\n";
 }
@@ -328,7 +328,7 @@ void Config::createSensors()
             sensorMap_[node.name] = make_sensor<ShellSensor>(node.bind);
         }
         else if(hwmonMap_.contains(node.type)) {
-            sensorMap_[node.name] = hwmonMap_[node.type].getSensor(node.bind);
+            sensorMap_[node.name] = hwmonMap_.at(node.type).getSensor(node.bind);
             sensorMap_[node.name]->open();
         }
         else {
@@ -347,7 +347,7 @@ void Config::createPwms()
         cout << node.name << " " << node.type << " " << node.bind << " " << static_cast<uint32_t>(node.mode) << " "
              << node.minpwm << " " << node.maxpwm << "\n";
         if(hwmonMap_.contains(node.type)) {
-            auto pwmObj = hwmonMap_[node.type].getPwm(node.bind);
+            auto pwmObj = hwmonMap_.at(node.type).getPwm(node.bind);
             pwmObj->setMode(node.mode);
             pwmObj->setMin(node.minpwm);
             pwmObj->setMax(node.maxpwm);

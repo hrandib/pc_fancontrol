@@ -5,7 +5,7 @@
 # to determine proper hwmon path for binding as hwmonX are not persistent
 #
 # 'drivetemp' nodes binding is performed in a different way.
-# As they have the same name, additional options must be provided:
+# As they have the same name additional options must be provided:
 # name - assigns a unique name for the following binding
 # keyPath - relative attribute path on sysfs that points to value to bind
 #   default value: "device/wwid"

@@ -20,39 +20,55 @@
  * SOFTWARE.
  */
 #include "hwmon/hwmon.h"
-#include "hwmon/sensor_impl.h"
 #include "hwmon/pwm_impl.h"
+#include "hwmon/sensor_impl.h"
 #include "sysfs/reader_impl.h"
 #include <iostream>
 #include <thread>
 
-using std::cout, std::endl;
+using std::cout, std::endl, std::string;
 using std::literals::string_literals::operator""s;
 
-Hwmon::optionalPath Hwmon::getHwmonPathByName(sv hwmonName)
+static string toString(const Hwmon::Attributes& attrs)
+{
+    string result = attrs.nodeName;
+    if(attrs) {
+        result += "." + attrs.alias + " id='" + attrs.keyValue + "'";
+    }
+    return result;
+}
+
+Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
 {
     optionalPath result;
+    std::string nodeName = toString(attrs);
     for(size_t i{}; i < INIT_POLL_CYCLES; ++i) {
-        result = tryHwmonInit(hwmonName);
+        result = findPath(attrs);
         if(result) {
-            cout << hwmonName << " init success" << endl;
+            cout << nodeName << " init success" << endl;
             break;
         }
-        cout << hwmonName << " init failed, attempt " << i << endl;
+        cout << nodeName << " init failed, attempt " << i << endl;
         std::this_thread::sleep_for(INIT_POLL_SECS);
     }
     return result;
 }
 
-Hwmon::optionalPath Hwmon::tryHwmonInit(Hwmon::sv hwmonName)
+Hwmon::optionalPath Hwmon::findPath(const Attributes& attrs)
 {
     optionalPath result;
-    for (const auto& entry : fs::directory_iterator(HWMON_ROOT)) {
-        if (!entry.is_directory()) {
+    for(const auto& entry : fs::directory_iterator(HWMON_ROOT)) {
+        if(!entry.is_directory()) {
             continue;
         }
-        auto file = SysfsReaderImpl(entry.path()/"name");
-        if (file.open() && (file.read() == hwmonName)) {
+        auto file = SysfsReaderImpl(entry.path() / "name");
+        if(file.open() && (file.read() == attrs.nodeName)) {
+            if(attrs) {
+                auto keyFile = SysfsReaderImpl(entry.path() / attrs.keyPath);
+                if(file.open() && (file.read() != attrs.keyValue)) {
+                    continue;
+                }
+            }
             result = entry.path();
             cout << entry << "\n";
             break;
@@ -61,24 +77,15 @@ Hwmon::optionalPath Hwmon::tryHwmonInit(Hwmon::sv hwmonName)
     return result;
 }
 
-
-Hwmon::Hwmon(sv hwmonName)
+Hwmon::Hwmon(const Attributes& attrs)
 {
-    auto result = getHwmonPathByName(hwmonName);
+    auto result = getHwmonPath(attrs);
     if(result) {
         hwmonPath_ = result.value();
-    } else {
-        throw std::invalid_argument("hwmon construction failed: "s + hwmonName.data());
     }
-}
-
-bool Hwmon::setName(sv hwmonName)
-{
-    auto result = getHwmonPathByName(hwmonName);
-    if (result) {
-        hwmonPath_ = result.value();
+    else {
+        throw std::invalid_argument("hwmon construction failed: "s + toString(attrs));
     }
-    return result.has_value();
 }
 
 Sensor::ptr Hwmon::getSensor(sv sensorName)
@@ -89,7 +96,7 @@ Sensor::ptr Hwmon::getSensor(sv sensorName)
         result = sensorCache_[sensor];
     }
     else {
-        result = make_sensor<SensorImpl>(getHwmonPath()/sensorName);
+        result = make_sensor<SensorImpl>(getHwmonPath() / sensorName);
         if(result->exists()) {
             sensorCache_[sensor] = result;
         }
@@ -108,7 +115,7 @@ Pwm::ptr Hwmon::getPwm(sv pwmName)
         result = pwmCache_[pwm];
     }
     else {
-        result = make_pwm<PwmImpl>(getHwmonPath()/pwmName);
+        result = make_pwm<PwmImpl>(getHwmonPath() / pwmName);
         if(result->exists()) {
             pwmCache_[pwm] = result;
         }
