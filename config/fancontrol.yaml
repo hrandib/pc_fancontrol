@@ -3,10 +3,22 @@
 
 # /sys/class/hwmon node declarations, uses the 'name' file content (/sys/class/hwmonX/name)
 # to determine proper hwmon path for binding as hwmonX are not persistent
+#
+# 'drivetemp' nodes binding is performed in a different way.
+# As they have the same name, additional options must be provided:
+# name - assigns a unique name for the following binding
+# keyPath - relative attribute path on sysfs that points to value to bind
+#   default value: "device/wwid"
+# bind - key value to bind
+# This approach is supported for any arbitrary node with a non-unique name
+
 hwmon:
 # - it8665
 # - k10temp
 # - amdgpu
+# - drivetemp: { name: dt_hdd1, bind: naa.5000cca25444276b }
+# - drivetemp: { name: dt_hdd2, bind: naa.5000cca25444555c }
+# - drivetemp: { name: dt_ssd, keyPath: "device/model", bind: "Samsung SSD 850" }
 
 # Sensor binding
 # Sensor types:
@@ -21,6 +33,9 @@ sensors:
 #  - mb: { type: it8665, bind: temp2 }
 #  - wd12: { type: shell_cmd, bind: "hddtemp /dev/sdd | tail -c 6 | head -c -4" }
 #  - wd8: { type: shell_cmd, bind: "hddtemp /dev/sdc | tail -c 6 | head -c -4" }
+#  - hdd1: { type: dt_hdd1, bind: temp1 }
+#  - hdd2: { type: dt_hdd2, bind: temp1 }
+#  - ssd: { type: dt_ssd, bind: temp1 }
 
 # PWM channel binding
 # type: hwmon node entry, defined in 'hwmon' section
@@ -48,7 +63,7 @@ pwms:
 # Can link multiple sensors to the multiple pwms.
 # sensor: Sensor binding entry. Can be multiple, highest temperature will be used as a reference
 # pwm: PWM channel binding entry. Can be multiple, each pwm will be controlled according to the
-#   allowed PWM range
+#   allowed PWM range, highest value is used in the case of using multiple binding to the same pwm channel
 # mode: control algorithm, possible values:
 # 1. two_point - simple 2 point curve transformation
 # 2. multi_point - arbitrary amount of approximation points
@@ -84,6 +99,9 @@ controllers:
 #    }
 #  - cha2: { sensor: wd4, pwm: cha, mode: multi_point, poll: 30s,
 #    set: {{ 40 : 0 }, { 50 : 50 }, { 60 : 100 }}
+#    }
+#  - cha3: { sensor: { hdd1, hdd2, ssd }, pwm: cha, mode: pi, poll: { time: 2s, ma_samples: 8 },
+#      set: { t: 50, kp: 2, ki: 0.1, max_i: 75 }
 #    }
 #  - aux: { sensor: cpu, pwm: cha , mode: two_point, poll: 5s,
 #     set: { a: 40, b: 75 }
