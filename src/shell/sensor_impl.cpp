@@ -24,7 +24,7 @@
 #include <array>
 #include <iostream>
 
-ShellSensor::ShellSensor(const std::string& path) : executablePath{path}
+ShellSensor::ShellSensor(const std::string& path) : executablePath_{path}
 { }
 
 int32_t ShellSensor::get()
@@ -32,7 +32,7 @@ int32_t ShellSensor::get()
     auto now = std::chrono::system_clock::now();
     if(now > READ_PERIOD + prevReadTime_) {
         try {
-            cachedVal_ = exec(executablePath.c_str());
+            cachedVal_ = exec(executablePath_.c_str());
             prevReadTime_ = now;
         }
         catch(std::exception& e) {

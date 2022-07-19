@@ -25,17 +25,16 @@
 #include <cmath>
 #include <iostream>
 
-PwmImpl::PwmImpl(const fs::path& pwmPath,
-                 int min, int max, Mode mode)
-    : SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode},
-      previousRawValue_{UINT32_MAX}, isStopped_{}
+PwmImpl::PwmImpl(const fs::path& pwmPath, int min, int max, Mode mode) :
+  SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}, previousRawValue_{UINT32_MAX},
+  isStopped_{}
 {
     enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
     modePath_ += MODE_SUFFIX;
 }
 
-PwmImpl::PwmImpl(const fs::path &pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
+PwmImpl::PwmImpl(const fs::path& pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
 { }
 
 bool PwmImpl::setControl(Control control)
@@ -53,15 +52,15 @@ bool PwmImpl::activateMode(Mode mode)
 double PwmImpl::selectMaxValue(double val, const string& sourceName)
 {
     valueCache_[sourceName] = val;
-    auto it = std::max_element(valueCache_.cbegin(), valueCache_.cend(),
-                               [](const auto& a, const auto& b) { return a.second < b.second; });
+    auto it = std::max_element(
+      valueCache_.cbegin(), valueCache_.cend(), [](const auto& a, const auto& b) { return a.second < b.second; });
     return it->second;
 }
 
 bool PwmImpl::open()
 {
     if(mode_ != Mode::NoChange) {
-        //TODO: log set mode not supported
+        // TODO: log set mode not supported
         activateMode(mode_);
     }
     return setControl(Control::Manual) && SysfsWriterImpl::open();
@@ -69,7 +68,7 @@ bool PwmImpl::open()
 
 uint32_t PwmImpl::processFanStopCondition(int tempOffset)
 {
-    if (getFanStopHysteresis() == FANSTOP_DISABLE) {
+    if(getFanStopHysteresis() == FANSTOP_DISABLE) {
         return static_cast<uint32_t>(minPwm_);
     }
     if(tempOffset >= 0) {
@@ -86,10 +85,10 @@ bool PwmImpl::set(double val, int tempOffset, const string& sourceName)
     val = selectMaxValue(val, sourceName);
     uint32_t rawValue = processFanStopCondition(tempOffset);
     if(val >= 0) {
-        auto multiplier = (maxPwm_ - minPwm_)/100.0;
+        auto multiplier = (maxPwm_ - minPwm_) / 100.0;
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
     }
-    if (rawValue != previousRawValue_) {
+    if(rawValue != previousRawValue_) {
         if(!rawValue) {
             std::cout << sourceName << ": Fan stop" << std::endl;
         }

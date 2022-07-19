@@ -28,7 +28,7 @@ CppApplication { name: "fancontrol"
         "-Wall", "-Wextra"
     ]
     cpp.driverFlags: [
-        "-flto=8", "-O3"
+        "-flto=auto", "-O3"
     ]
     cpp.dynamicLibraries: [
         "pthread"

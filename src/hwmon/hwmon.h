@@ -22,17 +22,17 @@
 #ifndef HWMON_H
 #define HWMON_H
 
-#include <string_view>
 #include <filesystem>
 #include <optional>
+#include <string_view>
 
 #include "common/constants.h"
-#include "interface/sensor.h"
 #include "hwmon/pwm_impl.h"
+#include "interface/sensor.h"
 
 namespace fs = std::filesystem;
 
-class Hwmon //: public SensorFactory
+class Hwmon
 {
 private:
     using sv = std::string_view;
@@ -55,7 +55,6 @@ public:
     Sensor::ptr getSensor(sv sensorName);
     Pwm::ptr getPwm(sv pwmName);
     const fs::path& getHwmonPath();
-//  Tacho::ptr getTacho(sv tachoName);
 };
 
 #endif // HWMON_H
