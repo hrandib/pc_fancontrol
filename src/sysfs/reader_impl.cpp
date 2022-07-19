@@ -30,7 +30,7 @@ bool SysfsReaderImpl::open()
 std::string SysfsReaderImpl::read()
 {
     std::string result;
-    fstream_ >> result;
+    std::getline(fstream_, result);
     fstream_.seekg(0);
     return result;
 }

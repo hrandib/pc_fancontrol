@@ -65,7 +65,7 @@ Hwmon::optionalPath Hwmon::findPath(const Attributes& attrs)
         if(file.open() && (file.read() == attrs.nodeName)) {
             if(attrs) {
                 auto keyFile = SysfsReaderImpl(entry.path() / attrs.keyPath);
-                if(file.open() && (file.read() != attrs.keyValue)) {
+                if(keyFile.open() && (keyFile.read() != attrs.keyValue)) {
                     continue;
                 }
             }
