@@ -70,9 +70,6 @@ static inline bool matchDirectory(const fs::path& keyPath, const string& key)
             result = true;
             break;
         }
-        else {
-            continue;
-        }
     }
     return result;
 }
