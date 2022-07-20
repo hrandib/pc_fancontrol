@@ -48,7 +48,7 @@ Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
             cout << nodeName << " init success\n" << endl;
             break;
         }
-        cout << nodeName << " init failed, attempt\n " << i << endl;
+        cout << nodeName << " init failed, attempt " << i << endl;
         std::this_thread::sleep_for(INIT_POLL_SECS);
     }
     return result;

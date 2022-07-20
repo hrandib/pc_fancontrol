@@ -42,7 +42,7 @@ public:
         const string nodeName;
         const string alias{};
         const string keyValue{};
-        const string keyPath = string{DEFAULT_HWMON_KEY_PATH};
+        const string keyPath{DEFAULT_HWMON_KEY_PATH};
 
         explicit operator bool() const
         {
