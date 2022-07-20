@@ -58,7 +58,7 @@ Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
 static inline bool matchFile(const fs::path& keyPath, const string& key)
 {
     auto keyFile = SysfsReaderImpl(keyPath);
-    return keyFile.open() && (keyFile.read() != key);
+    return keyFile.open() && (keyFile.read() == key);
 }
 
 // Match by file name in a directory as a key
