@@ -54,6 +54,29 @@ Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
     return result;
 }
 
+// Match by file content as a key
+static inline bool matchFile(const fs::path& keyPath, const string& key)
+{
+    auto keyFile = SysfsReaderImpl(keyPath);
+    return keyFile.open() && (keyFile.read() != key);
+}
+
+// Match by file name in a directory as a key
+static inline bool matchDirectory(const fs::path& keyPath, const string& key)
+{
+    bool result = false;
+    for(const auto& entry : fs::directory_iterator(keyPath)) {
+        if(entry.path().filename() == key) {
+            result = true;
+            break;
+        }
+        else {
+            continue;
+        }
+    }
+    return result;
+}
+
 Hwmon::optionalPath Hwmon::findPath(const Attributes& attrs)
 {
     optionalPath result;
@@ -64,8 +87,18 @@ Hwmon::optionalPath Hwmon::findPath(const Attributes& attrs)
         auto file = SysfsReaderImpl(entry.path() / "name");
         if(file.open() && (file.read() == attrs.nodeName)) {
             if(attrs) {
-                auto keyFile = SysfsReaderImpl(entry.path() / attrs.keyPath);
-                if(keyFile.open() && (keyFile.read() != attrs.keyValue)) {
+                auto keyPath = entry.path() / attrs.keyPath;
+                if(fs::is_regular_file(keyPath)) {
+                    if(!matchFile(keyPath, attrs.keyValue)) {
+                        continue;
+                    }
+                }
+                else if(fs::is_directory(keyPath)) {
+                    if(!matchDirectory(keyPath, attrs.keyValue)) {
+                        continue;
+                    }
+                }
+                else {
                     continue;
                 }
             }

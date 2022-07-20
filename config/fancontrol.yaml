@@ -7,10 +7,12 @@
 # 'drivetemp' nodes binding is performed in a different way.
 # As they have the same name additional options must be provided:
 # name - assigns a unique name for the following binding
-# keyPath - relative attribute path on sysfs that points to value to bind
+# keyPath - relative attribute path on sysfs that points to the value to bind,
+#   it can be either a regular file or a directory. The file entry will use its content to match,
+#   the directory entry will expect child file/directory name to match
 #   default value: "device/wwid"
 # bind - key value to bind
-# This approach is supported for any arbitrary node with a non-unique name
+# This approach is supported for any arbitrary node with a non-unique name, e.g 'nvme'
 
 hwmon:
 # - it8665
@@ -19,6 +21,8 @@ hwmon:
 # - drivetemp: { name: dt_hdd1, bind: naa.5000cca25444276b }
 # - drivetemp: { name: dt_hdd2, bind: naa.5000cca25444555c }
 # - drivetemp: { name: dt_ssd, keyPath: "device/model", bind: "Samsung SSD 850" }
+# - drivetemp: { name: dt_hdd3, keyPath: "device/scsi_device", bind: "2:0:0:0" }
+
 
 # Sensor binding
 # Sensor types:
