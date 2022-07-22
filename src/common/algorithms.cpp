@@ -21,23 +21,26 @@
  */
 
 #include "common/algorithms.h"
+#include "common/constants.h"
 #include <cmath>
 
 ControlAlgo::~ControlAlgo() = default;
 
 double AlgoTwoPoint::getSetpoint(double temp)
 {
-    static const double k = 100.0 / (b_ - a_);
+    double result{};
     double norm_temp = temp - a_;
     if(temp >= b_) {
-        return 100;
+        result = MAX_PERCENT_VAL;
     }
     else if(norm_temp < 0) {
-        return -1;
+        result = -1;
     }
     else {
-        return norm_temp * k;
+        static const auto k = double(MAX_PERCENT_VAL) / (b_ - a_);
+        result = norm_temp * k;
     }
+    return result;
 }
 
 int AlgoTwoPoint::getNormalizedTemperature(double temp)
@@ -48,13 +51,13 @@ int AlgoTwoPoint::getNormalizedTemperature(double temp)
 double AlgoMultiPoint::getSetpoint(double temp)
 {
     double result{};
-    auto* begin = &points_[0];
+    const auto* begin = points_.data();
     for(size_t i = 1; i < points_.size(); ++i) {
         if(begin->first > temp) {
             result = -1;
             break;
         }
-        auto* end = &points_[i];
+        const auto* end = &points_[i];
         if(end->first > temp) {
             auto degDiff = double(end->first - begin->first);
             auto pwmDiff = double(end->second - begin->second);
@@ -62,7 +65,7 @@ double AlgoMultiPoint::getSetpoint(double temp)
             result = begin->second + ((temp - begin->first) * multiplier);
             break;
         }
-        else if(end == &*points_.rbegin()) {
+        if(end == &*points_.rbegin()) {
             result = end->second;
         }
         begin = end;
@@ -86,8 +89,8 @@ double AlgoPI::getSetpoint(double temp)
         integralErr_ = 0;
     }
     double result = pe + integralErr_;
-    if(result > 100) {
-        result = 100;
+    if(result > MAX_PERCENT_VAL) {
+        result = MAX_PERCENT_VAL;
     }
     return result;
 }

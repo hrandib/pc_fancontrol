@@ -22,18 +22,16 @@
 #ifndef PWMIMPL_H
 #define PWMIMPL_H
 
-#include "sysfs/writer_impl.h"
 #include "interface/pwm.h"
+#include "sysfs/writer_impl.h"
 #include <map>
 
-class PwmImpl : SysfsWriterImpl, public Pwm
+class PwmImpl
+  : SysfsWriterImpl
+  , public Pwm
 {
 public:
-    enum class Control {
-        Manual = 1,
-        Auto = 2
-    };
-
+    enum class Control { Manual = 1, Auto = 2 };
 private:
     using string = std::string;
     using sv = std::string_view;
@@ -54,8 +52,7 @@ private:
     double selectMaxValue(double val, const string& sourceName);
     uint32_t processFanStopCondition(int tempOffset);
 public:
-    PwmImpl(const fs::path& pwmPath, int min, int max,
-            Mode mode = Mode::NoChange);
+    PwmImpl(const fs::path& pwmPath, int min, int max, Mode mode = Mode::NoChange);
     PwmImpl(const fs::path& pwmPath);
 
     bool open() override;
@@ -83,6 +80,8 @@ public:
     }
 
     ~PwmImpl() override;
+
+    DISABLE_OBJ_COPY(PwmImpl)
 };
 
 template<typename T>

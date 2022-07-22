@@ -27,7 +27,6 @@
 #include <thread>
 
 using std::cout, std::endl, std::string;
-using std::literals::string_literals::operator""s;
 
 static string toString(const Hwmon::Attributes& attrs)
 {
@@ -119,7 +118,7 @@ Hwmon::Hwmon(const Attributes& attrs)
         hwmonPath_ = result.value();
     }
     else {
-        throw std::invalid_argument("hwmon construction failed: "s + toString(attrs));
+        throw std::invalid_argument("hwmon construction failed: " + toString(attrs));
     }
 }
 

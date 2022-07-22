@@ -21,20 +21,18 @@
  */
 
 #include "pwm_impl.h"
-#include "common/constants.h"
 #include <cmath>
 #include <iostream>
 
 PwmImpl::PwmImpl(const fs::path& pwmPath, int min, int max, Mode mode) :
-  SysfsWriterImpl{pwmPath}, valueCache_{}, minPwm_{min}, maxPwm_{max}, mode_{mode}, previousRawValue_{UINT32_MAX},
-  isStopped_{}
+  SysfsWriterImpl{pwmPath}, minPwm_{min}, maxPwm_{max}, mode_{mode}, previousRawValue_{UINT32_MAX}, isStopped_{}
 {
     enablePath_ = modePath_ = pwmPath;
     enablePath_ += ENABLE_SUFFIX;
     modePath_ += MODE_SUFFIX;
 }
 
-PwmImpl::PwmImpl(const fs::path& pwmPath) : PwmImpl{pwmPath, 0, 255, Mode::NoChange}
+PwmImpl::PwmImpl(const fs::path& pwmPath) : PwmImpl{pwmPath, 0, PWM_MAX_VAL, Mode::NoChange}
 { }
 
 bool PwmImpl::setControl(Control control)
@@ -89,10 +87,10 @@ bool PwmImpl::set(double val, int tempOffset, const string& sourceName)
         rawValue = static_cast<uint32_t>(minPwm_ + std::lround(multiplier * val));
     }
     if(rawValue != previousRawValue_) {
-        if(!rawValue) {
+        if(rawValue == 0) {
             std::cout << sourceName << ": Fan stop" << std::endl;
         }
-        else if(!previousRawValue_) {
+        else if(previousRawValue_ == 0) {
             std::cout << sourceName << ": Fan start" << std::endl;
         }
         previousRawValue_ = rawValue;

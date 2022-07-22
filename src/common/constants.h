@@ -28,9 +28,12 @@ constexpr std::string_view HWMON_ROOT = "/sys/class/hwmon";
 constexpr std::string_view DEFAULT_HWMON_KEY_PATH = "device/wwid";
 
 constexpr int SYSFS_DEGREE_SCALE = 1000;
+constexpr int MAX_PERCENT_VAL = 100;
+constexpr int DEC_ORDER = 10;
 
 constexpr int FANSTOP_DEFAULT_HYSTERESIS = 3;
 constexpr int FANSTOP_DISABLE = -1;
+constexpr int PWM_MAX_VAL = 255;
 
 #ifdef NDEBUG
 constexpr bool DEBUG_MODE = false;

@@ -22,7 +22,21 @@
 
 #include "controller.h"
 
+#include <iomanip>
+#include <syncstream>
+
 std::atomic_bool Controller::breakExecution_;
+
+void Controller::printLogEntry(int temp, double meanValue, double setpoint)
+{
+    using namespace std;
+    osyncstream ss{cout};
+    ss << name_ << " Peak: " << temp;
+    if(samples_.inUse()) {
+        ss << " | Mean: " << setprecision(1) << fixed << meanValue;
+    }
+    ss << " | " << setprecision(0) << fixed << setpoint << "% pwm" << endl;
+}
 
 void Controller::handle()
 {
@@ -33,8 +47,7 @@ void Controller::handle()
         double setpoint = algo_->getSetpoint(meanValue);
         if(temp != previousDegreeValue_ && setpoint > -1) {
             previousDegreeValue_ = temp;
-            std::cout << name_ << " Peak: " << temp << " Mean: " << round(meanValue * 10) / 10 << " | "
-                      << round(setpoint * 10) / 10 << "% pwm" << std::endl;
+            printLogEntry(temp, meanValue, setpoint);
         }
         setAllPwms(setpoint, algo_->getNormalizedTemperature(meanValue));
         std::this_thread::sleep_for(ms(config_.getPollConfig().timeMsecs));
@@ -51,7 +64,7 @@ int32_t Controller::getHighestTemp()
 
 void Controller::setAllPwms(double value, int tempOffset)
 {
-    for(auto& pwm : config_.getPwms()) {
+    for(const auto& pwm : config_.getPwms()) {
         pwm->set(value, tempOffset, name_);
     }
 }
@@ -60,7 +73,7 @@ Controller::Controller(const Controller::string& name, ConfigEntry& conf) :
   name_{name}, config_{std::move(conf)},
   samples_(static_cast<size_t>(conf.getPollConfig().samplesCount)), previousDegreeValue_{}
 {
-    switch(conf.getMode()) {
+    switch(config_.getMode()) {
         case ConfigEntry::SETMODE_TWO_POINT: {
             ConfigEntry::TwoPointConfMode mode = std::get<ConfigEntry::SETMODE_TWO_POINT>(config_.getModeConfig());
             algo_ = std::make_unique<AlgoTwoPoint>(mode.temp_a, mode.temp_b);

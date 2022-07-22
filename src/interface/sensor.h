@@ -22,16 +22,20 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
+#include "common/macro.h"
 #include <memory>
 
 struct Sensor
 {
     using ptr = std::shared_ptr<Sensor>;
 
+    Sensor() = default;
     virtual bool open() = 0;
     virtual int32_t get() = 0;
     virtual bool exists() = 0;
     virtual ~Sensor();
+
+    DISABLE_OBJ_COPY(Sensor)
 };
 
 #endif // SENSOR_H

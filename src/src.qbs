@@ -17,6 +17,7 @@ Product { name: "src"
                 "constants.h",
                 "algorithms.h",
                 "algorithms.cpp",
+                "macro.h"
             ]
             cpp.includePaths: outer.concat(FileInfo.joinPaths(product.sourceDirectory, "common"))
         }

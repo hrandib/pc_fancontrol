@@ -62,12 +62,11 @@ public:
 
     struct PollConf
     {
-        enum PollMode {
-            PollSimple,
-            PollMovingAverage,
-        };
-        PollMode mode;
-        int timeMsecs, samplesCount;
+        static constexpr int DEFAULT_POLL_MSECS = 1000;
+        static constexpr int DEFAULT_SAMPLES_AMOUNT = 1;
+
+        int timeMsecs{DEFAULT_POLL_MSECS};
+        int samplesCount{DEFAULT_SAMPLES_AMOUNT};
     };
 private:
     using Sensors = std::vector<Sensor::ptr>;
@@ -122,15 +121,14 @@ public:
         return *this;
     }
 
-    ConfigEntry& setPollConfig(PollConf::PollMode mode, int pollTime, int samplesCount)
+    ConfigEntry& setPollConfig(int pollTime, int samplesCount)
     {
-        pollConf_.mode = mode;
         pollConf_.timeMsecs = pollTime;
         pollConf_.samplesCount = samplesCount;
         return *this;
     }
 
-    ConfigEntry& setPollConfig(const PollConf& conf)
+    ConfigEntry& setPollConfig(PollConf conf)
     {
         pollConf_ = conf;
         return *this;
@@ -138,7 +136,6 @@ public:
 
     ConfigEntry& setPollConfig(int pollTime)
     {
-        pollConf_.mode = PollConf::PollSimple;
         pollConf_.timeMsecs = pollTime;
         return *this;
     }

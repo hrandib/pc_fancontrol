@@ -71,14 +71,13 @@ struct PwmNode
     std::string name;
     std::string type;
     std::string bind;
-    int minpwm, maxpwm;
+    int minpwm{}, maxpwm{};
     Pwm::Mode mode{Pwm::Mode::NoChange};
-    int fanStopHyst;
+    int fanStopHyst{FANSTOP_DISABLE};
 };
 
 static void operator>>(const YAML::Node& node, PwmNode& pwmNode)
 {
-    pwmNode.fanStopHyst = FANSTOP_DISABLE;
     for(auto it = node.begin(); it != node.end(); ++it) {
         pwmNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
@@ -126,15 +125,15 @@ struct ControllerNode
     std::string name;
     StringVector sensor;
     StringVector pwm;
-    SetMode mode;
-    PollConf pollConfig;
-    ModeConf modeConfig;
+    SetMode mode{};
+    PollConf pollConfig{};
+    ModeConf modeConfig{};
 };
 
 static inline int parseTime(const YAML::Node& poll)
 {
     auto stringValue = poll.as<std::string>();
-    int result;
+    int result{};
     try {
         result = std::stoi(stringValue);
     }
@@ -143,7 +142,7 @@ static inline int parseTime(const YAML::Node& poll)
     }
     if(stringValue.find("ms") == std::string::npos) {
         // used field units - secs, convert to ms
-        result *= 1000;
+        result *= SYSFS_DEGREE_SCALE;
     }
     return result;
 }
@@ -151,13 +150,10 @@ static inline int parseTime(const YAML::Node& poll)
 static inline PollConf parsePollConfig(const YAML::Node& poll)
 {
     PollConf result;
-    result.samplesCount = 1;
     if(poll.IsScalar()) {
-        result.mode = PollConf::PollSimple;
         result.timeMsecs = parseTime(poll);
     }
     else {
-        result.samplesCount = 1;
         for(auto it = poll.begin(); it != poll.end(); ++it) {
             auto key = it->first.as<std::string>();
             if(key == "time") {
@@ -165,7 +161,6 @@ static inline PollConf parsePollConfig(const YAML::Node& poll)
             }
             else if(key == "ma_samples") {
                 result.samplesCount = it->second.as<int>();
-                result.mode = PollConf::PollMovingAverage;
             }
         }
     }
@@ -191,7 +186,7 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
     ModeConf result;
     switch(mode) {
         case ConfigEntry::SETMODE_TWO_POINT: {
-            ConfigEntry::TwoPointConfMode confMode;
+            ConfigEntry::TwoPointConfMode confMode{};
             for(auto it = node.begin(); it != node.end(); ++it) {
                 auto key = it->first.as<std::string>();
                 if(key == "a") {
@@ -230,7 +225,7 @@ static inline ModeConf parseModeConfig(SetMode mode, const YAML::Node& node)
                 }
                 else if(key == "max_i") {
                     int max_i = it->second.as<int>();
-                    if(max_i > 0 && max_i <= 100) {
+                    if(max_i > 0 && max_i <= MAX_PERCENT_VAL) {
                         confMode.max_i = max_i;
                     }
                 }
@@ -248,7 +243,9 @@ static inline HwAttrs parseHwmonAttributes(const YAML::Node& node)
 {
     using std::string;
     string keyPath{DEFAULT_HWMON_KEY_PATH};
-    string nodeName, bind, alias;
+    string nodeName;
+    string bind;
+    string alias;
     if(node.IsScalar()) {
         nodeName = node.as<std::string>();
     }
@@ -271,8 +268,7 @@ static inline HwAttrs parseHwmonAttributes(const YAML::Node& node)
             }
         }
         if(nodeName.empty() || bind.empty()) {
-            throw std::invalid_argument(
-              "hwmon config entry is inconsistent, must contain \'bind\' and \'name\' fields");
+            throw std::invalid_argument(R"(hwmon config entry is inconsistent, must contain 'bind' and 'name' fields)");
         }
     }
     return {.nodeName = nodeName, .alias = alias, .keyValue = bind, .keyPath = keyPath};
@@ -280,10 +276,6 @@ static inline HwAttrs parseHwmonAttributes(const YAML::Node& node)
 
 static void operator>>(const YAML::Node& node, ControllerNode& controllerNode)
 {
-    controllerNode.pollConfig.mode = PollConf::PollSimple;
-    controllerNode.pollConfig.samplesCount = 1;
-    controllerNode.pollConfig.timeMsecs = 1000;
-
     for(auto it = node.begin(); it != node.end(); ++it) {
         controllerNode.name = it->first.as<std::string>();
         for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {

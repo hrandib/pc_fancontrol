@@ -24,6 +24,7 @@
 #define CONTROLLER_H
 
 #include "common/algorithms.h"
+#include "common/constants.h"
 #include "configentry.h"
 #include "interface/pwm.h"
 #include "interface/sensor.h"
@@ -41,9 +42,9 @@ class MovingAverageBuf
 private:
     static constexpr int INIT_DEGREE = 45;
     std::vector<int> buf_;
-    size_t index;
+    size_t index{};
 public:
-    explicit MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE), index{}
+    explicit MovingAverageBuf(size_t bufSize) : buf_(bufSize, INIT_DEGREE)
     { }
     MovingAverageBuf& add(int val)
     {
@@ -56,6 +57,10 @@ public:
     double getMean()
     {
         return std::accumulate(buf_.cbegin(), buf_.cend(), static_cast<int>(0)) / static_cast<double>(buf_.size());
+    }
+    bool inUse()
+    {
+        return buf_.size() > 1;
     }
 };
 
@@ -79,12 +84,13 @@ class Controller
     int32_t getHighestTemp();
 
     void setAllPwms(double value, int tempOffset);
+    void printLogEntry(int temp, double meanValue, double setpoint);
 public:
     Controller(const string& name, ConfigEntry& conf);
 
     void run()
     {
-        processingThread_ = std::thread{ &Controller::handle, this };
+        processingThread_ = std::thread{&Controller::handle, this};
     }
 
     ~Controller()
@@ -97,6 +103,8 @@ public:
     {
         breakExecution_ = true;
     }
+
+    DISABLE_OBJ_COPY(Controller)
 };
 
 #endif // CONTROLLER_H

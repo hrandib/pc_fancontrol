@@ -23,6 +23,7 @@
 #ifndef ALGO_H
 #define ALGO_H
 
+#include "common/macro.h"
 #include "configentry.h"
 
 struct ControlAlgo
@@ -30,6 +31,9 @@ struct ControlAlgo
     virtual double getSetpoint(double) = 0;
     virtual int getNormalizedTemperature(double) = 0;
     virtual ~ControlAlgo();
+
+    ControlAlgo() = default;
+    DISABLE_OBJ_COPY(ControlAlgo)
 };
 
 class AlgoTwoPoint : public ControlAlgo
@@ -56,9 +60,9 @@ class AlgoPI : public ControlAlgo
 {
     const double t_, kp_, ki_;
     const int max_i_;
-    double integralErr_;
+    double integralErr_{};
 public:
-    AlgoPI(double t, double kp, double ki, int max_i) : t_{t}, kp_{kp}, ki_{ki}, max_i_{max_i}, integralErr_{}
+    AlgoPI(double t, double kp, double ki, int max_i) : t_{t}, kp_{kp}, ki_{ki}, max_i_{max_i}
     { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double) final;

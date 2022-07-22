@@ -22,11 +22,15 @@
 #ifndef PWM_H
 #define PWM_H
 
+#include "common/constants.h"
+#include "common/macro.h"
 #include <memory>
 #include <utility>
 
 struct Pwm
 {
+    Pwm() = default;
+
     using ptr = std::shared_ptr<Pwm>;
     using string = std::string;
 
@@ -50,14 +54,16 @@ struct Pwm
         fanStopHyst_ = hysteresis;
     }
 
-    int getFanStopHysteresis()
+    int getFanStopHysteresis() const
     {
         return fanStopHyst_;
     }
 
     virtual ~Pwm();
+
+    DISABLE_OBJ_COPY(Pwm)
 private:
-    int fanStopHyst_;
+    int fanStopHyst_{FANSTOP_DISABLE};
 };
 
 #endif // PWM_H

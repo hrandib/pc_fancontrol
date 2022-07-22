@@ -44,7 +44,7 @@ int32_t ShellSensor::get()
 
 int ShellSensor::exec(const char* cmd)
 {
-    std::array<char, 128> buffer{};
+    std::array<char, INPUT_BUF_SIZE> buffer{};
     std::string rawResult;
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
     if(!pipe) {

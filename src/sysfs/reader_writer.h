@@ -22,9 +22,10 @@
 #ifndef SYSFS_READER_H
 #define SYSFS_READER_H
 
+#include "common/macro.h"
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <stdlib.h>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -62,6 +63,8 @@ public:
     virtual explicit operator bool() = 0;
 
     virtual ~SysfsReader();
+
+    DISABLE_OBJ_COPY(SysfsReader)
 };
 
 class SysfsWriter
@@ -90,6 +93,8 @@ public:
     virtual bool write(uint32_t val) = 0;
 
     virtual ~SysfsWriter();
+
+    DISABLE_OBJ_COPY(SysfsWriter)
 };
 
 #endif // SYSFS_READER_H
