@@ -23,6 +23,7 @@
 #include "hwmon/pwm_impl.h"
 #include "hwmon/sensor_impl.h"
 #include "sysfs/reader_impl.h"
+#include <algorithm>
 #include <iostream>
 #include <thread>
 
@@ -68,14 +69,8 @@ static inline bool matchFile(const fs::path& keyPath, const string& key)
 // Match by file name in a directory as a key
 static inline bool matchDirectory(const fs::path& keyPath, const string& key)
 {
-    bool result = false;
-    for(const auto& entry : fs::directory_iterator(keyPath)) {
-        if(entry.path().filename() == key) {
-            result = true;
-            break;
-        }
-    }
-    return result;
+    return std::ranges::any_of(fs::directory_iterator(keyPath),
+                               [&key](const auto& entry) { return entry.path().filename() == key; });
 }
 
 Hwmon::optionalPath Hwmon::findPath(const Attributes& attrs)

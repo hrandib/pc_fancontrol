@@ -103,8 +103,8 @@ public:
 
     ConfigEntry& addPoint(int temp, int pwm_percent)
     {
-        if(modeConf_.index() == SETMODE_MULTI_POINT) {
-            std::get<SETMODE_MULTI_POINT>(modeConf_).pointVec.emplace_back(temp, pwm_percent);
+        if(auto* mode = std::get_if<MultiPointConfMode>(&modeConf_)) {
+            mode->pointVec.emplace_back(temp, pwm_percent);
         }
         return *this;
     }
