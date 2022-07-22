@@ -15,7 +15,7 @@ int main(int /* argc */, const char** /* argv[] */)
 {
     signal(SIGINT, sigintHandler);
     signal(SIGTERM, sigintHandler);
-    std::cout << "Version: " << VERSION << "\n";
+    std::cout << "Version: " << VERSION << (DEBUG_MODE ? "-debug\n" : "\n");
     Config config{"/etc/fancontrol.yaml"};
     config.run();
 }

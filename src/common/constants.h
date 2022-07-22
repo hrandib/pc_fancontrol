@@ -32,4 +32,10 @@ constexpr int SYSFS_DEGREE_SCALE = 1000;
 constexpr int FANSTOP_DEFAULT_HYSTERESIS = 3;
 constexpr int FANSTOP_DISABLE = -1;
 
+#ifdef NDEBUG
+constexpr bool DEBUG_MODE = false;
+#else
+constexpr bool DEBUG_MODE = true;
+#endif
+
 #endif // CONSTANTS_H

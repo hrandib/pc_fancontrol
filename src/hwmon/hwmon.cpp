@@ -42,6 +42,11 @@ Hwmon::optionalPath Hwmon::getHwmonPath(const Attributes& attrs)
 {
     optionalPath result;
     std::string nodeName = toString(attrs);
+    if constexpr(DEBUG_MODE) {
+        if(nodeName == "debug") {
+            return "hwmon";
+        }
+    }
     for(size_t i{}; i < INIT_POLL_CYCLES; ++i) {
         result = findPath(attrs);
         if(result) {

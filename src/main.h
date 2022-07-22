@@ -23,26 +23,27 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <fstream>
-#include <vector>
-#include <string_view>
-#include <cstddef>
-#include <string>
 #include <algorithm>
-#include <numeric>
+#include <chrono>
+#include <cstddef>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <vector>
 
-#include "sysfs/writer_impl.h"
-#include "sysfs/reader_impl.h"
-#include "hwmon/sensor_impl.h"
-#include "hwmon/pwm_impl.h"
-#include "hwmon/hwmon.h"
+#include "common/constants.h"
 #include "config.h"
 #include "controller.h"
-#include "cstdio"
 #include "csignal"
+#include "cstdio"
+#include "hwmon/hwmon.h"
+#include "hwmon/pwm_impl.h"
+#include "hwmon/sensor_impl.h"
+#include "sysfs/reader_impl.h"
+#include "sysfs/writer_impl.h"
 
 #endif // MAIN_H
