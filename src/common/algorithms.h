@@ -38,9 +38,10 @@ struct ControlAlgo
 
 class AlgoTwoPoint : public ControlAlgo
 {
-    double a_, b_;
+    double a_, b_, k_;
 public:
-    AlgoTwoPoint(int a, int b) : a_{static_cast<double>(a)}, b_{static_cast<double>(b)}
+    AlgoTwoPoint(int a, int b) :
+      a_{static_cast<double>(a)}, b_{static_cast<double>(b)}, k_{double(MAX_PERCENT_VAL) / (b_ - a_)}
     { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double) final;

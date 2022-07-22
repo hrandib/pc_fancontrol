@@ -34,10 +34,11 @@ bool SensorImpl::open()
 
 int32_t SensorImpl::get()
 {
+    std::lock_guard lock{mutex_};
     auto now = std::chrono::system_clock::now();
-    if (now > READ_PERIOD + prevReadTime_) {
+    if(now > READ_PERIOD + prevReadTime_) {
         prevReadTime_ = now;
-        cachedVal_ = readNumber()/SYSFS_DEGREE_SCALE;
+        cachedVal_ = readNumber() / SYSFS_DEGREE_SCALE;
     }
     return cachedVal_;
 }

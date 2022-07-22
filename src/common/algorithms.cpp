@@ -37,8 +37,7 @@ double AlgoTwoPoint::getSetpoint(double temp)
         result = -1;
     }
     else {
-        static const auto k = double(MAX_PERCENT_VAL) / (b_ - a_);
-        result = norm_temp * k;
+        result = norm_temp * k_;
     }
     return result;
 }

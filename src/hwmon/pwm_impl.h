@@ -26,9 +26,7 @@
 #include "sysfs/writer_impl.h"
 #include <map>
 
-class PwmImpl
-  : SysfsWriterImpl
-  , public Pwm
+class PwmImpl : SysfsWriterImpl, public Pwm
 {
 public:
     enum class Control { Manual = 1, Auto = 2 };
@@ -39,6 +37,7 @@ private:
     static inline constexpr sv ENABLE_SUFFIX = "_enable";
     static inline constexpr sv MODE_SUFFIX = "_mode";
 
+    std::mutex mutex_;
     std::map<string, double> valueCache_;
     fs::path enablePath_, modePath_;
     int minPwm_, maxPwm_;

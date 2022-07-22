@@ -80,6 +80,7 @@ uint32_t PwmImpl::processFanStopCondition(int tempOffset)
 
 bool PwmImpl::set(double val, int tempOffset, const string& sourceName)
 {
+    std::lock_guard lock{mutex_};
     val = selectMaxValue(val, sourceName);
     uint32_t rawValue = processFanStopCondition(tempOffset);
     if(val >= 0) {

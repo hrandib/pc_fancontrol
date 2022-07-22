@@ -32,8 +32,9 @@ private:
     static inline constexpr sv PATH_SUFFIX = "_input";
     static inline constexpr std::chrono::seconds READ_PERIOD{1};
 
+    std::mutex mutex_;
     std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};
-    std::atomic_int cachedVal_;
+    int cachedVal_{};
 public:
     SensorImpl(const fs::path& path);
 
@@ -41,7 +42,8 @@ public:
 
     int32_t get() override;
 
-    bool exists() override {
+    bool exists() override
+    {
         return fs::exists(getFilePath());
     }
 };
@@ -50,7 +52,8 @@ template<typename T>
 inline Sensor::ptr make_sensor(const fs::path&);
 
 template<>
-inline Sensor::ptr make_sensor<SensorImpl>(const fs::path& path) {
+inline Sensor::ptr make_sensor<SensorImpl>(const fs::path& path)
+{
     return std::make_shared<SensorImpl>(path);
 }
 
