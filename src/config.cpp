@@ -71,52 +71,54 @@ struct PwmNode
     std::string name;
     std::string type;
     std::string bind;
-    int minpwm{}, maxpwm{};
+    int minpwm{}, maxpwm{PWM_MAX_VAL};
     Pwm::Mode mode{Pwm::Mode::NoChange};
     int fanStopHyst{FANSTOP_DISABLE};
 };
 
 static void operator>>(const YAML::Node& node, PwmNode& pwmNode)
 {
-    for(auto it = node.begin(); it != node.end(); ++it) {
-        pwmNode.name = it->first.as<std::string>();
-        for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-            auto key = it2->first.as<std::string>();
-            if(key == "type") {
-                pwmNode.type = it2->second.as<std::string>();
+    auto it = node.begin();
+    pwmNode.name = it->first.as<std::string>();
+    for(auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+        auto key = it2->first.as<std::string>();
+        if(key == "type") {
+            pwmNode.type = it2->second.as<std::string>();
+        }
+        else if(key == "bind") {
+            pwmNode.bind = it2->second.as<std::string>();
+        }
+        else if(key == "mode") {
+            auto rawMode = it2->second.as<std::string>();
+            if(rawMode == "dc") {
+                pwmNode.mode = Pwm::Mode::Dc;
             }
-            else if(key == "bind") {
-                pwmNode.bind = it2->second.as<std::string>();
+            else if(rawMode == "pwm") {
+                pwmNode.mode = Pwm::Mode::Pwm;
             }
-            else if(key == "mode") {
-                auto rawMode = it2->second.as<std::string>();
-                if(rawMode == "dc") {
-                    pwmNode.mode = Pwm::Mode::Dc;
-                }
-                else if(rawMode == "pwm") {
-                    pwmNode.mode = Pwm::Mode::Pwm;
-                }
-                else {
-                    cout << "Incompatible PWM mode, no change: " + rawMode << "\n";
-                }
-            }
-            else if(key == "minpwm") {
-                pwmNode.minpwm = it2->second.as<int>();
-            }
-            else if(key == "maxpwm") {
-                pwmNode.maxpwm = it2->second.as<int>();
-            }
-            else if(key == "fan_stop") {
-                pwmNode.fanStopHyst = it2->second.as<bool>() ? FANSTOP_DEFAULT_HYSTERESIS : FANSTOP_DISABLE;
-            }
-            else if(key == "fan_stop_hysteresis") {
-                pwmNode.fanStopHyst = static_cast<int>(it2->second.as<uint32_t>());
-            }
-
             else {
-                cout << "unknown attribute:" << key << "\n";
+                cout << "Incompatible PWM mode, no change: " + rawMode << "\n";
             }
         }
+        else if(key == "minpwm") {
+            pwmNode.minpwm = it2->second.as<int>();
+        }
+        else if(key == "maxpwm") {
+            pwmNode.maxpwm = it2->second.as<int>();
+        }
+        else if(key == "fan_stop") {
+            pwmNode.fanStopHyst = it2->second.as<bool>() ? FANSTOP_DEFAULT_HYSTERESIS : FANSTOP_DISABLE;
+        }
+        else if(key == "fan_stop_hysteresis") {
+            pwmNode.fanStopHyst = static_cast<int>(it2->second.as<uint32_t>());
+        }
+
+        else {
+            cout << "unknown attribute:" << key << "\n";
+        }
+    }
+    if(pwmNode.type.empty() || pwmNode.bind.empty()) {
+        throw std::invalid_argument(R"(PWM config entry is inconsistent, must contain 'bind' and 'type' fields)");
     }
 }
 
