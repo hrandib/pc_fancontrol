@@ -39,7 +39,7 @@ public:
     using sv = std::string_view;
     using ptr = std::unique_ptr<SysfsReader>;
 
-    SysfsReader(const fs::path& filePath) : filePath_{filePath}
+    explicit SysfsReader(const fs::path& filePath) : filePath_{filePath}
     { }
 
     const fs::path& getFilePath()
@@ -76,7 +76,7 @@ public:
     using sv = std::string_view;
     using ptr = std::unique_ptr<SysfsWriter>;
 
-    SysfsWriter(const fs::path& filePath) : filePath_{filePath}
+    explicit SysfsWriter(const fs::path& filePath) : filePath_{filePath}
     { }
 
     const fs::path& getFilePath()

@@ -7,5 +7,4 @@
     void operator=(const class_name&) = delete; \
     void operator=(class_name&&) = delete;
 
-
 #endif // MACRO_H

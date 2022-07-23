@@ -44,17 +44,17 @@ public:
       a_{static_cast<double>(a)}, b_{static_cast<double>(b)}, k_{double(MAX_PERCENT_VAL) / (b_ - a_)}
     { }
     double getSetpoint(double temp) final;
-    int getNormalizedTemperature(double) final;
+    int getNormalizedTemperature(double temp) final;
 };
 
 class AlgoMultiPoint : public ControlAlgo
 {
     const ConfigEntry::PointVec points_;
 public:
-    AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
+    explicit AlgoMultiPoint(ConfigEntry::PointVec& vec) : points_{std::move(vec)}
     { }
     double getSetpoint(double temp) final;
-    int getNormalizedTemperature(double) final;
+    int getNormalizedTemperature(double temp) final;
 };
 
 class AlgoPI : public ControlAlgo
@@ -66,7 +66,7 @@ public:
     AlgoPI(double t, double kp, double ki, int max_i) : t_{t}, kp_{kp}, ki_{ki}, max_i_{max_i}
     { }
     double getSetpoint(double temp) final;
-    int getNormalizedTemperature(double) final;
+    int getNormalizedTemperature(double temp) final;
 };
 
 #endif // ALGO_H

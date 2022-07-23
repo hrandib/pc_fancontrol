@@ -38,7 +38,7 @@ private:
     std::chrono::time_point<std::chrono::system_clock> prevReadTime_{};
     std::atomic_int cachedVal_;
 public:
-    ShellSensor(const std::string& executablePath);
+    explicit ShellSensor(const std::string& executablePath);
 
     bool open() override
     {

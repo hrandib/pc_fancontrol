@@ -5,7 +5,7 @@ constexpr std::string_view VERSION = "1.3.3";
 using namespace std;
 using ms = chrono::milliseconds;
 
-void sigintHandler(int)
+void sigintHandler(int /*signum*/)
 {
     Controller::stop();
     std::cout << "SIG handler finish" << endl;

@@ -52,7 +52,7 @@ private:
     uint32_t processFanStopCondition(int tempOffset);
 public:
     PwmImpl(const fs::path& pwmPath, int min, int max, Mode mode = Mode::NoChange);
-    PwmImpl(const fs::path& pwmPath);
+    explicit PwmImpl(const fs::path& pwmPath);
 
     bool open() override;
     bool set(double val, int tempOffset, const string& sourceName) override;
