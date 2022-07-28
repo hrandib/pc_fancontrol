@@ -25,6 +25,7 @@
 #include "interface/sensor.h"
 #include "sysfs/reader_impl.h"
 #include <atomic>
+#include <mutex>
 
 class SensorImpl : SysfsReaderImpl, public Sensor
 {

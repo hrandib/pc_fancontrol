@@ -24,6 +24,7 @@
 
 #include "interface/pwm.h"
 #include "sysfs/writer_impl.h"
+#include <mutex>
 #include <map>
 
 class PwmImpl : SysfsWriterImpl, public Pwm
