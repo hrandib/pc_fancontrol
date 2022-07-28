@@ -23,14 +23,21 @@
 #include "controller.h"
 
 #include <iomanip>
+
+#if __has_include(<syncstream>)
 #include <syncstream>
+using osstream = std::osyncstream;
+#else
+// Possible logs output collision but no operation impact, for GCC < 11
+using osstream = std::ostream&;
+#endif
 
 std::atomic_bool Controller::breakExecution_;
 
 void Controller::printLogEntry(int temp, double meanValue, double setpoint)
 {
     using namespace std;
-    osyncstream ss{cout};
+    osstream ss{cout};
     ss << name_ << " Peak: " << temp;
     if(samples_.inUse()) {
         ss << " | Mean: " << setprecision(1) << fixed << meanValue;
