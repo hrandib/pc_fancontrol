@@ -58,8 +58,8 @@ double AlgoMultiPoint::getSetpoint(double temp)
         }
         const auto* end = &points_[i];
         if(end->first > temp) {
-            auto degDiff = double(end->first - begin->first);
-            auto pwmDiff = double(end->second - begin->second);
+            auto degDiff = static_cast<double>(end->first - begin->first);
+            auto pwmDiff = static_cast<double>(end->second - begin->second);
             auto multiplier = pwmDiff / degDiff;
             result = begin->second + ((temp - begin->first) * multiplier);
             break;

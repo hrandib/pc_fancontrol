@@ -41,7 +41,7 @@ class AlgoTwoPoint : public ControlAlgo
     double a_, b_, k_;
 public:
     AlgoTwoPoint(int a, int b) :
-      a_{static_cast<double>(a)}, b_{static_cast<double>(b)}, k_{double(MAX_PERCENT_VAL) / (b_ - a_)}
+      a_{static_cast<double>(a)}, b_{static_cast<double>(b)}, k_{static_cast<double>(MAX_PERCENT_VAL) / (b_ - a_)}
     { }
     double getSetpoint(double temp) final;
     int getNormalizedTemperature(double temp) final;
