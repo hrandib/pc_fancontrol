@@ -24,6 +24,7 @@
 
 #include "interface/pwm.h"
 #include "sysfs/writer_impl.h"
+#include <algorithm>
 #include <mutex>
 #include <map>
 
